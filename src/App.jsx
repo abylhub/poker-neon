@@ -5,6 +5,7 @@ import Games from './pages/Games.jsx'
 import GameDetail from './pages/GameDetail.jsx'
 import PlayerProfile from './pages/PlayerProfile.jsx'
 import Seasons from './pages/Seasons.jsx'
+import Knockouts from './pages/Knockouts.jsx'
 import LiveSetup from './pages/live/LiveSetup.jsx'
 import LiveGame from './pages/live/LiveGame.jsx'
 import LiveResults from './pages/live/LiveResults.jsx'
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/game/:id" element={<GameDetail/>}/>
         <Route path="/player/:id" element={<PlayerProfile/>}/>
         <Route path="/seasons" element={<Seasons/>}/>
+        <Route path="/knockouts" element={<Knockouts/>}/>
         <Route path="/live/setup" element={<LiveSetup/>}/>
         <Route path="/live/:gameId" element={<LiveGame/>}/>
         <Route path="/live/:gameId/results" element={<LiveResults/>}/>

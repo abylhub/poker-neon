@@ -25,7 +25,7 @@ export default function Layout() {
           </Link>
 
           <nav className="hidden sm:flex items-center gap-1">
-            {[['/', 'Рейтинг'], ['/games', 'Игры'], ['/seasons', 'Сезоны']].map(([to, label]) => (
+            {[['/', 'Рейтинг'], ['/games', 'Игры'], ['/knockouts', 'Нокауты'], ['/seasons', 'Сезоны']].map(([to, label]) => (
               <NavLink key={to} to={to} end={to==='/'} className={({isActive})=>`px-3 py-2 rounded text-xs tracking-wide transition-all ${isActive ? 'text-neon-cyan bg-neon-cyan/10 border border-neon-cyan/30' : 'text-white/40 hover:text-neon-cyan/80 hover:bg-neon-cyan/5'}`}>{label}</NavLink>
             ))}
           </nav>
@@ -48,7 +48,7 @@ export default function Layout() {
 
         {open && (
           <div className="sm:hidden border-t border-white/5 px-4 py-2 flex flex-col gap-1" style={{background:'rgba(5,5,16,0.95)'}}>
-            {[['/', 'Рейтинг'], ['/games', 'История игр'], ['/seasons', 'Сезоны'], ['/admin', 'Admin']].map(([to, label]) => (
+            {[['/', 'Рейтинг'], ['/games', 'История игр'], ['/knockouts', 'Нокауты'], ['/seasons', 'Сезоны'], ['/admin', 'Admin']].map(([to, label]) => (
               <NavLink key={to} to={to} end={to==='/'} onClick={close} className={({isActive})=>`px-3 py-3 rounded text-sm transition-all ${isActive ? 'text-neon-cyan bg-neon-cyan/10' : 'text-white/50'}`}>{label}</NavLink>
             ))}
           </div>
