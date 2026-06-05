@@ -1,7 +1,21 @@
 const K = { players:'pk2_players', games:'pk2_games', seasons:'pk2_seasons', settings:'pk2_settings' }
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb } catch { return fb } }
-const save = (k, v) => localStorage.setItem(k, JSON.stringify(v))
+const save = (k, v) => {
+  try {
+    localStorage.setItem(k, JSON.stringify(v))
+    return true
+  } catch (e) {
+    console.error('localStorage save failed:', k, e)
+    // Показываем ошибку пользователю
+    if (typeof window !== 'undefined') {
+      window.__storageError = e.name === 'QuotaExceededError'
+        ? 'Хранилище переполнено. Удалите старые данные.'
+        : 'Ошибка сохранения: ' + e.message
+    }
+    return false
+  }
+}
 
 // Players
 export const getPlayers = () => load(K.players, [])
