@@ -1,6 +1,4 @@
-import { getPlayers, savePlayers, getSeasons, saveSeasons, getGames, saveGames, getSettings, saveSettings } from './store.js'
-
-const shuffle = (arr) => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}; return a }
+import { getPlayers, savePlayers } from './store.js'
 
 const makeAvatar = (suit, c1, c2, bg, eye, shape) => {
   const shapes = {
@@ -186,13 +184,11 @@ const PLAYERS_DATA = [
   { name:'Sultan', suit:'♦', c1:'#ff3333', c2:'#ff6b00', bg:'#0f0000', shape:'emperor' },
 ]
 
-const PTS = { 1:25,2:18,3:15,4:12,5:10,6:8,7:6,8:4,9:2,10:1 }
-
 export function seedIfEmpty() {
   const existing = getPlayers()
   if (existing.length > 0) return // уже есть данные
 
-  // Создаём игроков
+  // Только игроки — без сезона и игр
   const players = PLAYERS_DATA.map(d => ({
     id: crypto.randomUUID(),
     name: d.name,
@@ -200,48 +196,4 @@ export function seedIfEmpty() {
     createdAt: Date.now(),
   }))
   savePlayers(players)
-
-  // Создаём сезон
-  const season = { id: crypto.randomUUID(), name: 'Сезон 1 — 2026', isActive: true, createdAt: Date.now() }
-  saveSeasons([season])
-
-  // Устанавливаем пароль admin
-  saveSettings({ adminHash: null, leagueName: 'Poker League', adminPassword: 'admin123' })
-
-  // Генерируем 10 игр с рандомными местами
-  const pids = players.map(p => p.id)
-  const now = Date.now()
-  const DAY = 86400000
-  const games = []
-
-  for (let g = 0; g < 10; g++) {
-    const order = shuffle(pids)
-    const date = now - (9 - g) * DAY * 5
-
-    // Случайные нокауты
-    const kos = {}
-    pids.forEach(id => kos[id] = 0)
-    for (let i = 0; i < pids.length - 1; i++) {
-      if (Math.random() > 0.4) {
-        const killer = order[Math.floor(Math.random() * (pids.length - 1))]
-        if (killer !== order[i]) kos[killer]++
-      }
-    }
-
-    const eliminated = order.map((pid, idx) => {
-      const place = idx + 1
-      const k = kos[pid] || 0
-      const ppf = PTS[place] || 1
-      return { playerId:pid, eliminatedBy:null, place, knockouts:k, pointsForPlace:ppf, totalPoints:ppf+k, eliminatedAt:date+idx*120000 }
-    })
-
-    games.push({
-      id: crypto.randomUUID(), type:'season', seasonId:season.id,
-      isSpecial:false, title:null, description:null,
-      date, status:'completed', playerIds:pids,
-      eliminated, knockouts:kos, createdAt:date,
-    })
-  }
-
-  saveGames(games)
 }
