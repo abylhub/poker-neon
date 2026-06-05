@@ -45,7 +45,7 @@ export default function Leaderboard() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="label mb-1">Текущий сезон</div>
-          <h1 className="font-display text-lg font-400" style={{ color: '#f0e6ff' }}>{season.name}</h1>
+          <h1 className="casino-heading text-xl">{season.name}</h1>
         </div>
         <div className="font-mono text-xs" style={{ color: 'rgba(240,230,255,0.25)' }}>{seasonGames.length} игр</div>
       </div>
@@ -66,7 +66,7 @@ export default function Leaderboard() {
             </div>
             <div className="text-center sm:text-left">
               <div className="label mb-1.5">Season Leader</div>
-              <div className="font-display text-2xl font-400 mb-4" style={{ color: '#f0e6ff', textShadow: '0 0 20px rgba(255,45,120,0.3)' }}>{lp.name}</div>
+              <div className="casino-heading text-2xl mb-4" style={{ textShadow: '0 0 20px rgba(255,45,120,0.3)' }}>{lp.name}</div>
               <div className="flex flex-wrap justify-center sm:justify-start gap-6">
                 {[
                   { val: leader.seasonPoints, label: 'Best 7',  color: '#ff2d78' },

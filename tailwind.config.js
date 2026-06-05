@@ -5,21 +5,21 @@ export default {
     extend: {
       colors: {
         vc: {
-          pink:    '#ff2d78',
-          teal:    '#00d4ff',
-          purple:  '#9d00ff',
-          coral:   '#ff6b35',
-          yellow:  '#ffd166',
-          bg:      '#0d0818',
-          bg2:     '#120d1f',
-          bg3:     '#1a1230',
-          border:  'rgba(255,45,120,0.2)',
+          pink:   '#ff2d78',
+          teal:   '#00d4ff',
+          purple: '#9d00ff',
+          coral:  '#ff6b35',
+          gold:   '#ffd166',
+          bg:     '#0d0818',
+          bg2:    '#120d1f',
+          bg3:    '#1a1230',
         },
       },
       fontFamily: {
-        display: ['Orbitron', 'sans-serif'],
-        body:    ['Rajdhani', 'sans-serif'],
-        mono:    ['JetBrains Mono', 'monospace'],
+        display: ['Orbitron', 'sans-serif'],       // UI labels, nav
+        casino:  ['Cinzel', 'serif'],               // 80s casino headings
+        body:    ['Rajdhani', 'sans-serif'],         // body text
+        mono:    ['JetBrains Mono', 'monospace'],    // numbers
       },
     },
   },
