@@ -57,6 +57,16 @@ export const closeSeason = async (id) => {
   await updateDoc(doc(db, 'seasons', id), { isActive: false, closedAt: Date.now() })
 }
 
+// Удалить сезон + все его игры
+export const deleteSeason = async (id) => {
+  // Удаляем все игры сезона
+  const q = query(collection(db, 'games'), where('seasonId', '==', id))
+  const snap = await getDocs(q)
+  for (const d of snap.docs) await deleteDoc(d.ref)
+  // Удаляем сам сезон
+  await deleteDoc(doc(db, 'seasons', id))
+}
+
 // ─── Games ──────────────────────────────────────────────────────────────────
 export const getGames = async () => {
   const snap = await getDocs(collection(db, 'games'))

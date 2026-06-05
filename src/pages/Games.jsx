@@ -63,12 +63,14 @@ export default function Games() {
                   <span className={g.isSpecial ? 'badge-special' : 'badge-season'}>{g.isSpecial ? 'Special' : 'Season'}</span>
                   {g.title && <span className="font-body text-sm" style={{ color: 'rgba(240,230,255,0.6)' }}>{g.title}</span>}
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs" style={{ color: 'rgba(240,230,255,0.25)' }}>{date}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs" style={{ color: 'rgba(232,222,255,0.25)' }}>{date}</span>
                   {isAdmin && (
                     <button onClick={e => handleDelete(e, g.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 rounded"
-                      style={{ color: 'rgba(255,45,120,0.6)', border: '1px solid rgba(255,45,120,0.2)' }}>
+                      className="text-xs px-2 py-1 rounded transition-all"
+                      style={{ color: 'rgba(255,45,120,0.5)', border: '1px solid rgba(255,45,120,0.18)' }}
+                      onMouseEnter={e => { e.target.style.color='#ff2d78'; e.target.style.borderColor='rgba(255,45,120,0.5)' }}
+                      onMouseLeave={e => { e.target.style.color='rgba(255,45,120,0.5)'; e.target.style.borderColor='rgba(255,45,120,0.18)' }}>
                       ✕
                     </button>
                   )}
