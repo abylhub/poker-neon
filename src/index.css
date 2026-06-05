@@ -6,133 +6,151 @@
   *, *::before, *::after { box-sizing: border-box; }
   body {
     margin: 0;
-    background: #0d0818;
-    color: #f0e6ff;
-    font-family: 'Rajdhani', system-ui, sans-serif;
+    background: #07050f;
+    color: #e8deff;
+    font-family: 'Montserrat', system-ui, sans-serif;
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
   }
   ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: #0d0818; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,45,120,0.3); border-radius: 2px; }
+  ::-webkit-scrollbar-track { background: #07050f; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.25); border-radius: 2px; }
 }
 
 @layer components {
 
-  /* ── Cards ── */
+  /* ── Cards — cyberpunk casino style ── */
   .card {
-    background: rgba(18,13,31,0.85);
-    border: 1px solid rgba(255,45,120,0.18);
-    border-radius: 6px;
-    backdrop-filter: blur(8px);
+    background: rgba(13,10,26,0.9);
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 4px;
+    backdrop-filter: blur(12px);
+    position: relative;
   }
-  .card-teal {
-    background: rgba(18,13,31,0.85);
-    border: 1px solid rgba(0,212,255,0.22);
-    border-radius: 6px;
-    backdrop-filter: blur(8px);
+  /* Card corners — playing card style */
+  .card::before {
+    content: '♠';
+    position: absolute; top: 6px; left: 8px;
+    font-size: 9px; color: rgba(255,45,120,0.3);
+    font-family: serif; line-height: 1;
+    pointer-events: none;
   }
-  .card-purple {
-    background: rgba(18,13,31,0.85);
-    border: 1px solid rgba(157,0,255,0.28);
-    border-radius: 6px;
-    backdrop-filter: blur(8px);
+  .card::after {
+    content: '♠';
+    position: absolute; bottom: 6px; right: 8px;
+    font-size: 9px; color: rgba(255,45,120,0.3);
+    font-family: serif; line-height: 1;
+    pointer-events: none;
+    transform: rotate(180deg);
+  }
+  .card-plain {
+    background: rgba(13,10,26,0.9);
+    border: 1px solid rgba(255,215,0,0.15);
+    border-radius: 4px;
+    backdrop-filter: blur(12px);
+  }
+  .card-green {
+    background: rgba(13,10,26,0.9);
+    border: 1px solid rgba(0,255,159,0.2);
+    border-radius: 4px;
+    backdrop-filter: blur(12px);
+  }
+  .card-pink {
+    background: rgba(13,10,26,0.9);
+    border: 1px solid rgba(255,45,120,0.25);
+    border-radius: 4px;
+    backdrop-filter: blur(12px);
   }
 
   /* ── Buttons ── */
   .btn {
     display: inline-flex; align-items: center; justify-content: center;
-    font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 600;
-    letter-spacing: 0.2em; text-transform: uppercase;
-    padding: 10px 20px; border-radius: 3px;
+    font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 10px 22px; border-radius: 2px;
     transition: all 0.2s; cursor: pointer; border: none; outline: none;
   }
   .btn-pink  { border: 1px solid #ff2d78; color: #ff2d78; background: transparent; }
-  .btn-pink:hover  { background: #ff2d78; color: #0d0818; box-shadow: 0 0 25px rgba(255,45,120,0.55); }
-  .btn-teal  { border: 1px solid #00d4ff; color: #00d4ff; background: transparent; }
-  .btn-teal:hover  { background: #00d4ff; color: #0d0818; box-shadow: 0 0 25px rgba(0,212,255,0.5); }
-  .btn-solid { background: linear-gradient(135deg, #ff2d78, #c0205a); color: #fff; border: 1px solid #ff2d78; font-weight: 600; }
-  .btn-solid:hover { box-shadow: 0 0 30px rgba(255,45,120,0.6); }
+  .btn-pink:hover  { background: #ff2d78; color: #07050f; box-shadow: 0 0 25px rgba(255,45,120,0.55), 0 0 50px rgba(255,45,120,0.2); }
+  .btn-gold  { border: 1px solid #ffd700; color: #ffd700; background: transparent; }
+  .btn-gold:hover  { background: #ffd700; color: #07050f; box-shadow: 0 0 25px rgba(255,215,0,0.5); }
+  .btn-green { border: 1px solid #00ff9f; color: #00ff9f; background: transparent; }
+  .btn-green:hover { background: #00ff9f; color: #07050f; box-shadow: 0 0 25px rgba(0,255,159,0.5); }
+  .btn-solid { background: linear-gradient(135deg, #ff2d78 0%, #b01050 100%); color: #fff; border: 1px solid #ff2d78; font-weight: 700; letter-spacing: 0.12em; }
+  .btn-solid:hover { box-shadow: 0 0 30px rgba(255,45,120,0.6), 0 0 60px rgba(255,45,120,0.2); }
   .btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
   /* ── Neon text ── */
-  .vc-pink   { color: #ff2d78; text-shadow: 0 0 14px rgba(255,45,120,0.85); }
-  .vc-teal   { color: #00d4ff; text-shadow: 0 0 12px rgba(0,212,255,0.75); }
-  .vc-purple { color: #9d00ff; text-shadow: 0 0 14px rgba(157,0,255,0.75); }
-  .vc-green  { color: #06ffa5; text-shadow: 0 0 12px rgba(6,255,165,0.65); }
-  .vc-gold   { color: #ffd166; text-shadow: 0 0 12px rgba(255,209,102,0.6); }
+  .neon-pink   { color: #ff2d78; text-shadow: 0 0 10px rgba(255,45,120,0.9), 0 0 30px rgba(255,45,120,0.4); }
+  .neon-gold   { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.8), 0 0 30px rgba(255,215,0,0.3); }
+  .neon-green  { color: #00ff9f; text-shadow: 0 0 10px rgba(0,255,159,0.8), 0 0 30px rgba(0,255,159,0.3); }
+  .neon-blue   { color: #00cfff; text-shadow: 0 0 10px rgba(0,207,255,0.8), 0 0 30px rgba(0,207,255,0.3); }
 
   /* ── Badges ── */
   .badge-season {
-    display: inline-flex; align-items: center;
-    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.35);
-    color: #00d4ff; font-family: 'Orbitron', sans-serif;
-    font-size: 8px; font-weight: 600; letter-spacing: 0.2em;
-    padding: 2px 8px; border-radius: 2px; text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(0,207,255,0.08); border: 1px solid rgba(0,207,255,0.35);
+    color: #00cfff; font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+    padding: 3px 8px; border-radius: 2px; text-transform: uppercase;
   }
   .badge-special {
-    display: inline-flex; align-items: center;
+    display: inline-flex; align-items: center; gap: 4px;
     background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.38);
-    color: #ff6b35; font-family: 'Orbitron', sans-serif;
-    font-size: 8px; font-weight: 600; letter-spacing: 0.2em;
-    padding: 2px 8px; border-radius: 2px; text-transform: uppercase;
+    color: #ff6b35; font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
+    padding: 3px 8px; border-radius: 2px; text-transform: uppercase;
   }
 
   /* ── Live dot ── */
   .live-dot {
     display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-    background: #ff2d78; box-shadow: 0 0 10px #ff2d78;
+    background: #ff2d78; box-shadow: 0 0 10px #ff2d78, 0 0 20px rgba(255,45,120,0.4);
     animation: blink 1.4s ease-in-out infinite; flex-shrink: 0;
   }
-  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.2; } }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.15; } }
 
   /* ── Glow pulse (winner) ── */
   .glow-pulse { animation: gpulse 2.5s ease-in-out infinite; }
   @keyframes gpulse {
-    0%,100% { box-shadow: 0 0 15px rgba(255,45,120,0.5), 0 0 30px rgba(255,45,120,0.15); }
-    50%      { box-shadow: 0 0 45px rgba(255,45,120,0.9), 0 0 90px rgba(255,45,120,0.3); }
+    0%,100% { box-shadow: 0 0 15px rgba(255,215,0,0.4), 0 0 30px rgba(255,215,0,0.1); }
+    50%      { box-shadow: 0 0 40px rgba(255,215,0,0.8), 0 0 80px rgba(255,215,0,0.3); }
   }
 
   /* ── Label ── */
   .label {
-    font-family: 'Orbitron', sans-serif; font-size: 9px; font-weight: 500;
-    letter-spacing: 0.32em; text-transform: uppercase; color: rgba(240,230,255,0.32);
+    font-family: 'Montserrat', sans-serif; font-size: 9px; font-weight: 500;
+    letter-spacing: 0.3em; text-transform: uppercase; color: rgba(232,222,255,0.3);
   }
 
-  /* ── Casino heading (Cinzel) ── */
-  .casino-heading {
-    font-family: 'Cinzel', serif; font-weight: 500; letter-spacing: 0.08em;
-    color: #f0e6ff;
-  }
-  .casino-heading-pink {
-    font-family: 'Cinzel', serif; font-weight: 500; letter-spacing: 0.08em;
-    color: #ff2d78; text-shadow: 0 0 20px rgba(255,45,120,0.6);
-  }
+  /* ── Display heading (Josefin Sans = Century Gothic) ── */
+  .dh { font-family: 'Josefin Sans', sans-serif; font-weight: 600; letter-spacing: 0.05em; }
+  .dh-light { font-family: 'Josefin Sans', sans-serif; font-weight: 300; letter-spacing: 0.08em; }
 
   /* ── Decorative lines ── */
-  .vc-line {
-    height: 1px;
-    background: linear-gradient(90deg, transparent 0%, #ff2d78 30%, #00d4ff 70%, transparent 100%);
-    opacity: 0.35;
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    color: rgba(255,215,0,0.3); font-family: serif; font-size: 10px;
   }
-  .vc-line-gold {
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.3), transparent);
+  }
+
+  .gold-line {
     height: 1px;
-    background: linear-gradient(90deg, transparent 0%, #ffd166 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, #ffd700 30%, #ff2d78 70%, transparent 100%);
     opacity: 0.3;
   }
+  .suit-divider::before { content: '♦ ♠ ♥ ♣'; }
 
-  /* ── Sunset / casino background card ── */
-  .sunset-bg {
+  /* ── Holographic hero ── */
+  .holo-bg {
     background: linear-gradient(135deg,
-      rgba(157,0,255,0.1) 0%,
-      rgba(255,45,120,0.07) 50%,
-      rgba(0,212,255,0.05) 100%
+      rgba(139,0,255,0.12) 0%,
+      rgba(255,45,120,0.08) 35%,
+      rgba(0,207,255,0.06) 65%,
+      rgba(0,255,159,0.05) 100%
     );
   }
-
-  /* ── Corner decoration ── */
-  .corner-tl { position:absolute; top:0; left:0; width:20px; height:20px; border-top:1px solid #ff2d78; border-left:1px solid #ff2d78; opacity:0.5; }
-  .corner-br { position:absolute; bottom:0; right:0; width:20px; height:20px; border-bottom:1px solid #00d4ff; border-right:1px solid #00d4ff; opacity:0.5; }
-  .corner-tr { position:absolute; top:0; right:0; width:20px; height:20px; border-top:1px solid #00d4ff; border-right:1px solid #00d4ff; opacity:0.5; }
-  .corner-bl { position:absolute; bottom:0; left:0; width:20px; height:20px; border-bottom:1px solid #ff2d78; border-left:1px solid #ff2d78; opacity:0.5; }
 }

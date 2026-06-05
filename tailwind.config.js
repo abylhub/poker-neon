@@ -4,22 +4,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        vc: {
+        cp: {
+          bg:     '#07050f',
+          bg2:    '#0d0a1a',
+          bg3:    '#120f22',
           pink:   '#ff2d78',
-          teal:   '#00d4ff',
-          purple: '#9d00ff',
-          coral:  '#ff6b35',
-          gold:   '#ffd166',
-          bg:     '#0d0818',
-          bg2:    '#120d1f',
-          bg3:    '#1a1230',
+          green:  '#00ff9f',
+          gold:   '#ffd700',
+          blue:   '#00cfff',
+          purple: '#8b00ff',
+          border: 'rgba(255,45,120,0.2)',
         },
       },
       fontFamily: {
-        display: ['Orbitron', 'sans-serif'],       // UI labels, nav
-        casino:  ['Cinzel', 'serif'],               // 80s casino headings
-        body:    ['Rajdhani', 'sans-serif'],         // body text
-        mono:    ['JetBrains Mono', 'monospace'],    // numbers
+        // Gotham = Montserrat (same designer, same proportions)
+        sans:    ['Montserrat', 'system-ui', 'sans-serif'],
+        // Century Gothic = Josefin Sans
+        display: ['Josefin Sans', 'sans-serif'],
+        mono:    ['JetBrains Mono', 'monospace'],
       },
     },
   },
