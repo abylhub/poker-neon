@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { getPlayers, addPlayer, updatePlayer, deletePlayer } from '../../data/store.js'
+import { addPlayer, updatePlayer, deletePlayer } from '../../lib/db.js'
+import { usePlayers } from '../../hooks/useData.js'
 import { useToast } from '../../components/Toast.jsx'
 import Avatar from '../../components/Avatar.jsx'
 
@@ -12,8 +13,7 @@ function resizePhoto(file, maxPx = 400) {
       img.onload = () => {
         const scale = Math.min(maxPx / img.width, maxPx / img.height, 1)
         const canvas = document.createElement('canvas')
-        canvas.width = img.width * scale
-        canvas.height = img.height * scale
+        canvas.width = img.width * scale; canvas.height = img.height * scale
         canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
         resolve(canvas.toDataURL('image/jpeg', 0.85))
       }
@@ -25,15 +25,14 @@ function resizePhoto(file, maxPx = 400) {
 
 export default function AdminPlayers() {
   const toast = useToast()
-  const [players, setPlayers] = useState(getPlayers)
+  const { players } = usePlayers()
   const [name, setName] = useState('')
   const [photo, setPhoto] = useState(null)
   const [editId, setEditId] = useState(null)
   const [editName, setEditName] = useState('')
   const [editPhoto, setEditPhoto] = useState(null)
+  const [saving, setSaving] = useState(false)
   const addPhotoRef = useRef()
-
-  const reload = () => setPlayers(getPlayers())
 
   async function onAddPhoto(e) {
     const file = e.target.files[0]
@@ -45,39 +44,35 @@ export default function AdminPlayers() {
     if (file) setEditPhoto(await resizePhoto(file))
   }
 
-  function add(e) {
+  async function add(e) {
     e.preventDefault()
     if (!name.trim()) return
-    addPlayer(name.trim(), photo)
+    setSaving(true)
+    await addPlayer(name.trim(), photo)
     setName(''); setPhoto(null)
     if (addPhotoRef.current) addPhotoRef.current.value = ''
-    reload()
+    setSaving(false)
     toast(`${name.trim()} добавлен`)
   }
 
-  function startEdit(p) {
-    setEditId(p.id)
-    setEditName(p.name)
-    setEditPhoto(null)
-  }
+  function startEdit(p) { setEditId(p.id); setEditName(p.name); setEditPhoto(null) }
 
-  function save(p) {
+  async function save(p) {
     const upd = {}
     if (editName.trim() && editName.trim() !== p.name) upd.name = editName.trim()
     if (editPhoto) upd.photoBase64 = editPhoto
     if (Object.keys(upd).length) {
-      updatePlayer(p.id, upd)
+      setSaving(true)
+      await updatePlayer(p.id, upd)
+      setSaving(false)
       toast('Сохранено')
     }
-    setEditId(null)
-    setEditPhoto(null)
-    reload()
+    setEditId(null); setEditPhoto(null)
   }
 
-  function del(id, name) {
+  async function del(id, name) {
     if (confirm(`Удалить ${name}?`)) {
-      deletePlayer(id)
-      reload()
+      await deletePlayer(id)
       toast(`${name} удалён`, 'error')
     }
   }
@@ -90,7 +85,6 @@ export default function AdminPlayers() {
           <Link to="/admin/dashboard" className="text-white/30 hover:text-white/60 text-xs">← Назад</Link>
         </div>
 
-        {/* Добавить */}
         <div className="card p-4 mb-5">
           <div className="label mb-3">Добавить игрока</div>
           <form onSubmit={add} className="space-y-3">
@@ -101,15 +95,12 @@ export default function AdminPlayers() {
                 📷 Фото
                 <input ref={addPhotoRef} type="file" accept="image/*" onChange={onAddPhoto} className="hidden" />
               </label>
-              {photo
-                ? <img src={photo} className="w-10 h-10 rounded-full object-cover border-2 border-neon-cyan/40" />
-                : <span className="text-xs text-white/20">не выбрано</span>}
-              <button type="submit" disabled={!name.trim()} className="btn btn-solid ml-auto">Добавить</button>
+              {photo ? <img src={photo} className="w-10 h-10 rounded-full object-cover border-2 border-neon-cyan/40" /> : <span className="text-xs text-white/20">не выбрано</span>}
+              <button type="submit" disabled={!name.trim() || saving} className="btn btn-solid ml-auto">{saving ? '...' : 'Добавить'}</button>
             </div>
           </form>
         </div>
 
-        {/* Список */}
         <div className="space-y-2">
           {players.map(p => (
             <div key={p.id} className="card p-3">
@@ -123,16 +114,16 @@ export default function AdminPlayers() {
                         <input type="file" accept="image/*" onChange={onEditPhoto} className="hidden" />
                       </label>
                     </div>
-                    <div className="flex-1 space-y-2">
+                    <div className="flex-1 space-y-1.5">
                       <input value={editName} onChange={e => setEditName(e.target.value)} autoFocus
                         className="w-full bg-dark-800 border border-neon-cyan/30 rounded px-2 py-1.5 text-sm text-white outline-none" />
-                      {editPhoto && <div className="text-[10px] text-neon-green">✓ новое фото выбрано</div>}
+                      {editPhoto && <div className="text-[10px] neon-green">✓ новое фото выбрано</div>}
                       <div className="text-[10px] text-white/25">Нажми на аватар чтобы сменить фото</div>
                     </div>
                   </div>
                   <div className="flex gap-2 justify-end">
                     <button onClick={() => setEditId(null)} className="text-white/30 hover:text-white/60 text-xs px-3 py-1.5">Отмена</button>
-                    <button onClick={() => save(p)} className="btn btn-cyan" style={{ padding: '6px 14px', fontSize: '10px' }}>Сохранить</button>
+                    <button onClick={() => save(p)} disabled={saving} className="btn btn-cyan" style={{ padding: '6px 14px', fontSize: '10px' }}>{saving ? '...' : 'Сохранить'}</button>
                   </div>
                 </div>
               ) : (

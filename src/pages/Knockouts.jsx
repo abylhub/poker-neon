@@ -1,45 +1,34 @@
 import { Link } from 'react-router-dom'
-import { getAllCompletedGames, getPlayers } from '../data/store.js'
-import { getResults } from '../data/scoring.js'
+import { useGames, usePlayers } from '../hooks/useData.js'
 import Avatar from '../components/Avatar.jsx'
 
 export default function Knockouts() {
-  const players = getPlayers()
-  const games = getAllCompletedGames()
-  const pmap = Object.fromEntries(players.map(p => [p.id, p]))
+  const { players, loading: pl } = usePlayers()
+  const { games, loading: gl } = useGames()
 
-  // Строим матрицу: killer → victim → count
+  if (pl || gl) return <div className="text-center py-20"><div className="w-8 h-8 border-2 border-neon-cyan/30 border-t-neon-cyan rounded-full animate-spin mx-auto" /></div>
+
+  const pmap = Object.fromEntries(players.map(p => [p.id, p]))
   const matrix = {}
   const totalKilled = {}
-  const totalDeaths = {}
 
-  for (const game of games) {
-    const results = getResults(game)
-    for (const r of results) {
-      const killerId = game.eliminated?.find(e => e.playerId === r.playerId)?.eliminatedBy
-      if (!killerId) continue
-      if (!matrix[killerId]) matrix[killerId] = {}
-      matrix[killerId][r.playerId] = (matrix[killerId][r.playerId] || 0) + 1
-      totalKilled[killerId] = (totalKilled[killerId] || 0) + 1
-      totalDeaths[r.playerId] = (totalDeaths[r.playerId] || 0) + 1
+  for (const game of games.filter(g => g.status === 'completed')) {
+    for (const e of (game.eliminated || [])) {
+      if (!e.eliminatedBy) continue
+      if (!matrix[e.eliminatedBy]) matrix[e.eliminatedBy] = {}
+      matrix[e.eliminatedBy][e.playerId] = (matrix[e.eliminatedBy][e.playerId] || 0) + 1
+      totalKilled[e.eliminatedBy] = (totalKilled[e.eliminatedBy] || 0) + 1
     }
   }
 
-  // Топ убийц
-  const killers = players
-    .map(p => ({ player: p, kills: totalKilled[p.id] || 0 }))
-    .filter(x => x.kills > 0)
-    .sort((a, b) => b.kills - a.kills)
+  const killers = players.map(p => ({ player: p, kills: totalKilled[p.id] || 0 })).filter(x => x.kills > 0).sort((a, b) => b.kills - a.kills)
 
-  // Самые частые дуэли
   const duels = []
   for (const killerId of Object.keys(matrix)) {
     for (const victimId of Object.keys(matrix[killerId])) {
-      const count = matrix[killerId][victimId]
-      const reverse = matrix[victimId]?.[killerId] || 0
       const key = [killerId, victimId].sort().join('-')
       if (!duels.find(d => d.key === key)) {
-        duels.push({ key, a: pmap[killerId], b: pmap[victimId], aKills: count, bKills: reverse })
+        duels.push({ key, a: pmap[killerId], b: pmap[victimId], aKills: matrix[killerId][victimId], bKills: matrix[victimId]?.[killerId] || 0 })
       }
     }
   }
@@ -47,20 +36,15 @@ export default function Knockouts() {
 
   return (
     <div className="max-w-xl mx-auto">
-      <div className="mb-5">
-        <div className="label mb-1">Статистика</div>
-        <h1 className="font-display text-lg text-white">История нокаутов</h1>
-      </div>
+      <div className="mb-5"><div className="label mb-1">Статистика</div><h1 className="font-display text-lg text-white">История нокаутов</h1></div>
 
       {killers.length === 0 ? (
-        <div className="card p-12 text-center text-white/25 text-sm">Нокаутов ещё не было</div>
+        <div className="card p-12 text-center text-white/25 text-sm">Нокаутов ещё не зафиксировано</div>
       ) : (
         <>
-          {/* Топ убийц */}
           <div className="card overflow-hidden mb-5">
             <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-              <span className="neon-green text-base">⚡</span>
-              <span className="label">Топ нокаутёров</span>
+              <span className="neon-green text-base">⚡</span><span className="label">Топ нокаутёров</span>
             </div>
             {killers.map((x, i) => (
               <div key={x.player.id} className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.04] last:border-0">
@@ -75,15 +59,13 @@ export default function Knockouts() {
             ))}
           </div>
 
-          {/* Дуэли */}
           {duels.length > 0 && (
             <div className="card overflow-hidden">
               <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-                <span className="neon-pink text-base">⚔️</span>
-                <span className="label">Дуэли</span>
+                <span className="text-base">⚔️</span><span className="label">Дуэли</span>
               </div>
               {duels.slice(0, 10).map(d => {
-                const aWins = d.aKills > d.bKills
+                const aWins = d.aKills >= d.bKills
                 return (
                   <div key={d.key} className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.04] last:border-0">
                     <div className="flex items-center gap-2 flex-1 min-w-0">

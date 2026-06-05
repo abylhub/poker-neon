@@ -1,27 +1,21 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getGame, getPlayers, eliminatePlayer } from '../../data/store.js'
+import { useGame, usePlayers } from '../../hooks/useData.js'
+import { eliminatePlayer } from '../../lib/db.js'
 import Avatar from '../../components/Avatar.jsx'
 
 function Modal({ players, onConfirm, onClose }) {
   const [victim, setVictim] = useState('')
   const [killer, setKiller] = useState('none')
-
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(5,5,16,0.92)', backdropFilter: 'blur(8px)' }}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+      style={{ background: 'rgba(5,5,16,0.92)', backdropFilter: 'blur(8px)' }}>
+      <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="w-full max-w-sm card-pink p-5"
-        style={{ boxShadow: '0 0 40px rgba(255,0,255,0.15)' }}
-      >
+        className="w-full max-w-sm card-pink p-5" style={{ boxShadow: '0 0 40px rgba(255,0,255,0.15)' }}>
         <div className="label mb-4">Выбить игрока</div>
-
         <div className="mb-4">
           <div className="text-xs text-white/40 mb-2">Кто выбывает?</div>
           <div className="space-y-1.5 max-h-52 overflow-y-auto">
@@ -36,7 +30,6 @@ function Modal({ players, onConfirm, onClose }) {
             ))}
           </div>
         </div>
-
         <div className="mb-5">
           <div className="text-xs text-white/40 mb-2">Кто его выбил? <span className="text-white/25">(необязательно)</span></div>
           <div className="space-y-1.5 max-h-40 overflow-y-auto">
@@ -55,7 +48,6 @@ function Modal({ players, onConfirm, onClose }) {
             ))}
           </div>
         </div>
-
         <div className="flex gap-3">
           <button onClick={onClose} className="btn btn-cyan flex-1" style={{ opacity: 0.5 }}>Отмена</button>
           <button onClick={() => { if (victim) onConfirm(victim, killer === 'none' ? null : killer) }} disabled={!victim} className="btn btn-pink flex-1">Выбить</button>
@@ -69,33 +61,30 @@ export default function LiveGame() {
   const { gameId } = useParams()
   const navigate = useNavigate()
   const [modal, setModal] = useState(false)
-  const [, tick] = useState(0)
+  const [acting, setActing] = useState(false)
+  const { game, loading } = useGame(gameId)
+  const { players } = usePlayers()
 
-  const game = getGame(gameId)
-  const allPlayers = getPlayers()
-
+  if (loading) return <div className="text-center py-20"><div className="w-8 h-8 border-2 border-neon-cyan/30 border-t-neon-cyan rounded-full animate-spin mx-auto" /></div>
   if (!game) return <div className="text-center py-20"><div className="text-white/30 mb-4">Игра не найдена</div><button onClick={() => navigate('/')} className="btn btn-cyan">На главную</button></div>
   if (game.status === 'completed') { navigate(`/live/${gameId}/results`, { replace: true }); return null }
 
-  const pmap = Object.fromEntries(allPlayers.map(p => [p.id, p]))
-  const elim = new Set(game.eliminated.map(e => e.playerId))
-  const active = game.playerIds.filter(id => !elim.has(id)).map(id => pmap[id]).filter(Boolean)
-  const done = [...game.eliminated].reverse()
+  const pmap = Object.fromEntries(players.map(p => [p.id, p]))
+  const elim = new Set((game.eliminated || []).map(e => e.playerId))
+  const active = (game.playerIds || []).filter(id => !elim.has(id)).map(id => pmap[id]).filter(Boolean)
+  const done = [...(game.eliminated || [])].reverse()
 
-  function onElim(victimId, killerId) {
-    eliminatePlayer(gameId, victimId, killerId)
+  async function onElim(victimId, killerId) {
+    setActing(true)
     setModal(false)
-    tick(n => n + 1)
-    const g = getGame(gameId)
-    if (g?.status === 'completed') setTimeout(() => navigate(`/live/${gameId}/results`), 600)
+    const updated = await eliminatePlayer(gameId, victimId, killerId)
+    setActing(false)
+    if (updated?.status === 'completed') setTimeout(() => navigate(`/live/${gameId}/results`), 600)
   }
 
   return (
     <>
-      <AnimatePresence>
-        {modal && <Modal players={active} onConfirm={onElim} onClose={() => setModal(false)} />}
-      </AnimatePresence>
-
+      <AnimatePresence>{modal && <Modal players={active} onConfirm={onElim} onClose={() => setModal(false)} />}</AnimatePresence>
       <div className="max-w-xl mx-auto">
         <div className="flex items-center justify-between mb-5">
           <div>
@@ -107,12 +96,11 @@ export default function LiveGame() {
             <h1 className="font-display text-lg text-white">{game.title || 'Покерная игра'}</h1>
           </div>
           <div className="text-right">
-            <motion.div key={active.length} initial={{ scale: 1.4, color: '#00f5ff' }} animate={{ scale: 1 }} className="font-mono text-3xl font-bold neon-cyan">{active.length}</motion.div>
+            <motion.div key={active.length} initial={{ scale: 1.4 }} animate={{ scale: 1 }} className="font-mono text-3xl font-bold neon-cyan">{active.length}</motion.div>
             <div className="label" style={{ fontSize: '9px' }}>осталось</div>
           </div>
         </div>
 
-        {/* Активные игроки */}
         <div className="card p-4 mb-4">
           <div className="label mb-3">В игре</div>
           <div className="grid grid-cols-2 gap-2">
@@ -120,7 +108,8 @@ export default function LiveGame() {
               {active.map(p => {
                 const kos = game.knockouts?.[p.id] || 0
                 return (
-                  <motion.div key={p.id} layout initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, x: 60, scale: 0.7 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                  <motion.div key={p.id} layout initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, x: 60, scale: 0.7 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                     className="flex items-center gap-2 p-2.5 rounded border border-neon-cyan/10 bg-neon-cyan/[0.02]">
                     <Avatar player={p} size={32} />
                     <div className="min-w-0">
@@ -134,12 +123,11 @@ export default function LiveGame() {
           </div>
         </div>
 
-        <button onClick={() => setModal(true)} disabled={active.length <= 1} className="btn w-full mb-4 py-4"
-          style={{ border: '1px solid rgba(255,0,255,0.4)', color: '#ff00ff', background: 'rgba(255,0,255,0.07)', fontFamily: 'Orbitron', fontSize: '11px', letterSpacing: '0.15em', boxShadow: '0 0 15px rgba(255,0,255,0.08)' }}>
-          Выбить игрока
+        <button onClick={() => setModal(true)} disabled={active.length <= 1 || acting} className="btn w-full mb-4 py-4"
+          style={{ border: '1px solid rgba(255,0,255,0.4)', color: '#ff00ff', background: 'rgba(255,0,255,0.07)', fontFamily: 'Orbitron', fontSize: '11px', letterSpacing: '0.15em' }}>
+          {acting ? 'Сохраняем...' : 'Выбить игрока'}
         </button>
 
-        {/* Выбывшие */}
         {done.length > 0 && (
           <div className="card p-4">
             <div className="label mb-3">Выбыли</div>
@@ -148,7 +136,7 @@ export default function LiveGame() {
                 const p = pmap[e.playerId]
                 const k = e.eliminatedBy ? pmap[e.eliminatedBy] : null
                 return (
-                  <motion.div key={e.playerId} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  <motion.div key={e.playerId} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
                     className="flex items-center gap-2.5 py-1.5 border-b border-white/[0.04] last:border-0">
                     <span className="font-mono text-xs text-white/25 w-5 text-center flex-shrink-0">{e.place}</span>
                     <Avatar player={p} size={28} />

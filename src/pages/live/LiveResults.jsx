@@ -1,14 +1,16 @@
 import { Link, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { getGame, getPlayers } from '../../data/store.js'
+import { useGame, usePlayers } from '../../hooks/useData.js'
 import Avatar from '../../components/Avatar.jsx'
 
 const PC = { 1: '#00f5ff', 2: '#c0c0ff', 3: '#cd7f32' }
 
 export default function LiveResults() {
   const { gameId } = useParams()
-  const game = getGame(gameId)
-  const players = getPlayers()
+  const { game, loading } = useGame(gameId)
+  const { players } = usePlayers()
+
+  if (loading) return <div className="text-center py-20"><div className="w-8 h-8 border-2 border-neon-cyan/30 border-t-neon-cyan rounded-full animate-spin mx-auto" /></div>
   if (!game) return <div className="text-center py-20"><Link to="/" className="btn btn-cyan">На главную</Link></div>
 
   const pmap = Object.fromEntries(players.map(p => [p.id, p]))
@@ -18,10 +20,8 @@ export default function LiveResults() {
 
   return (
     <div className="max-w-xl mx-auto">
-      {/* Победитель */}
       {wp && (
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
-          className="text-center mb-8">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center mb-8">
           <div className="label mb-4">Победитель</div>
           <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
             className="relative inline-block mb-3">
@@ -36,7 +36,6 @@ export default function LiveResults() {
         </motion.div>
       )}
 
-      {/* Таблица */}
       <div className="card overflow-hidden mb-5">
         <div className="px-4 py-3 border-b border-white/5 label">Итоги игры</div>
         <table className="w-full">
@@ -57,9 +56,7 @@ export default function LiveResults() {
               return (
                 <motion.tr key={r.playerId} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.06 }}
                   className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-3 py-2.5">
-                    <span className="font-mono font-bold text-base" style={{ color }}>{r.place <= 3 ? ['🥇', '🥈', '🥉'][r.place - 1] : r.place}</span>
-                  </td>
+                  <td className="px-3 py-2.5"><span className="font-mono font-bold text-base" style={{ color }}>{r.place <= 3 ? ['🥇', '🥈', '🥉'][r.place - 1] : r.place}</span></td>
                   <td className="px-3 py-2.5">
                     <div className="flex items-center gap-2">
                       <Avatar player={p} size={28} />
@@ -78,7 +75,6 @@ export default function LiveResults() {
           </tbody>
         </table>
       </div>
-
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex gap-3">
         <Link to="/" className="btn btn-cyan flex-1">На главную</Link>
         <Link to="/live/setup" className="btn btn-pink flex-1">Новая игра</Link>

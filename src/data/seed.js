@@ -1,4 +1,5 @@
-import { getPlayers, savePlayers } from './store.js'
+import { db } from '../lib/firebase.js'
+import { collection, getDocs, addDoc } from 'firebase/firestore'
 
 const makeAvatar = (suit, c1, c2, bg, eye, shape) => {
   const shapes = {
@@ -184,16 +185,16 @@ const PLAYERS_DATA = [
   { name:'Sultan', suit:'♦', c1:'#ff3333', c2:'#ff6b00', bg:'#0f0000', shape:'emperor' },
 ]
 
-export function seedIfEmpty() {
-  const existing = getPlayers()
-  if (existing.length > 0) return // уже есть данные
+// Сидим игроков в Firestore если их нет
+export async function seedIfEmpty() {
+  const snap = await getDocs(collection(db, 'players'))
+  if (!snap.empty) return // уже есть данные
 
-  // Только игроки — без сезона и игр
-  const players = PLAYERS_DATA.map(d => ({
-    id: crypto.randomUUID(),
-    name: d.name,
-    photoBase64: makeAvatar(d.suit, d.c1, d.c2, d.bg, d.c1, d.shape),
-    createdAt: Date.now(),
-  }))
-  savePlayers(players)
+  for (const d of PLAYERS_DATA) {
+    await addDoc(collection(db, 'players'), {
+      name: d.name,
+      photoBase64: makeAvatar(d.suit, d.c1, d.c2, d.bg, d.c1, d.shape),
+      createdAt: Date.now(),
+    })
+  }
 }

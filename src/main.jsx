@@ -6,7 +6,8 @@ import App from './App.jsx'
 import { ToastProvider } from './components/Toast.jsx'
 import { seedIfEmpty } from './data/seed.js'
 
-seedIfEmpty()
+// Сидим данные в Firestore (только если пусто)
+seedIfEmpty().catch(console.error)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
