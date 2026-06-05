@@ -4,12 +4,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        neon: { cyan: '#00f5ff', pink: '#ff00ff', green: '#7fff00', orange: '#ff6b00' },
-        dark: { 900: '#050510', 800: '#080818', 700: '#0d0d20', 600: '#12122a' },
+        vc: {
+          pink:    '#ff2d78',
+          teal:    '#00d4ff',
+          purple:  '#9d00ff',
+          coral:   '#ff6b35',
+          yellow:  '#ffd166',
+          bg:      '#0d0818',
+          bg2:     '#120d1f',
+          bg3:     '#1a1230',
+          border:  'rgba(255,45,120,0.2)',
+        },
       },
       fontFamily: {
         display: ['Orbitron', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        body:    ['Rajdhani', 'sans-serif'],
+        mono:    ['JetBrains Mono', 'monospace'],
       },
     },
   },

@@ -6,6 +6,14 @@ import Avatar from '../components/Avatar.jsx'
 
 const MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' }
 
+function Spinner() {
+  return (
+    <div className="flex items-center justify-center py-24">
+      <div className="w-8 h-8 rounded-full border-2 border-t-[#ff2d78] animate-spin" style={{ borderColor: 'rgba(255,45,120,0.2)', borderTopColor: '#ff2d78' }} />
+    </div>
+  )
+}
+
 export default function Leaderboard() {
   const { season, loading: sl } = useActiveSeason()
   const { players, loading: pl } = usePlayers()
@@ -20,55 +28,54 @@ export default function Leaderboard() {
   const leader = board[0]
   const lp = leader ? pmap[leader.playerId] : null
 
-  if (sl || pl || gl) return (
-    <div className="flex items-center justify-center py-24">
-      <div className="text-center">
-        <div className="w-8 h-8 border-2 border-neon-cyan/30 border-t-neon-cyan rounded-full animate-spin mx-auto mb-3" />
-        <div className="text-white/30 text-sm">Загрузка...</div>
-      </div>
-    </div>
-  )
+  if (sl || pl || gl) return <Spinner />
 
   if (!season) return (
     <div className="text-center py-24">
-      <div className="font-display text-4xl neon-cyan opacity-20 mb-4">♠</div>
-      <div className="font-display text-lg text-white/40 mb-2">Нет активного сезона</div>
-      <p className="text-white/25 text-sm mb-8">Создайте сезон в Admin панели</p>
-      <Link to="/admin" className="btn btn-cyan">Открыть Admin</Link>
+      <div className="font-display text-4xl mb-4 opacity-20 vc-pink">♠</div>
+      <div className="font-display text-lg mb-2 font-400" style={{ color: 'rgba(240,230,255,0.4)' }}>Нет активного сезона</div>
+      <p className="text-sm mb-8 font-body" style={{ color: 'rgba(240,230,255,0.25)' }}>Создайте сезон в Admin панели</p>
+      <Link to="/admin" className="btn btn-teal">Открыть Admin</Link>
     </div>
   )
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <div>
           <div className="label mb-1">Текущий сезон</div>
-          <h1 className="font-display text-lg text-white">{season.name}</h1>
+          <h1 className="font-display text-lg font-400" style={{ color: '#f0e6ff' }}>{season.name}</h1>
         </div>
-        <div className="font-mono text-xs text-white/25">{seasonGames.length} игр</div>
+        <div className="font-mono text-xs" style={{ color: 'rgba(240,230,255,0.25)' }}>{seasonGames.length} игр</div>
       </div>
 
-      {/* Hero */}
+      {/* Hero — Season Leader */}
       {lp && (
-        <div className="card mb-6 p-5 relative overflow-hidden" style={{ borderColor: 'rgba(0,245,255,0.2)', background: 'linear-gradient(135deg,rgba(0,245,255,0.04),rgba(255,0,255,0.02))' }}>
-          <div className="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none opacity-10" style={{ background: 'radial-gradient(circle,#00f5ff,transparent)', transform: 'translate(30%,-30%)' }} />
-          <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-4">
+        <div className="card mb-6 p-5 relative overflow-hidden sunset-bg" style={{ borderColor: 'rgba(255,45,120,0.25)' }}>
+          {/* decorative corner lines */}
+          <div className="absolute top-0 left-0 w-8 h-8 pointer-events-none" style={{ borderTop: '2px solid #ff2d78', borderLeft: '2px solid #ff2d78', opacity: 0.5 }} />
+          <div className="absolute bottom-0 right-0 w-8 h-8 pointer-events-none" style={{ borderBottom: '2px solid #00d4ff', borderRight: '2px solid #00d4ff', opacity: 0.5 }} />
+
+          <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-5">
             <div className="relative flex-shrink-0">
-              <Avatar player={lp} size={72} glow="cyan" />
+              <div className="glow-pulse rounded-full">
+                <Avatar player={lp} size={76} glow="pink" />
+              </div>
               <div className="absolute -bottom-1 -right-1 text-xl">👑</div>
             </div>
             <div className="text-center sm:text-left">
-              <div className="label mb-1">Season Leader</div>
-              <div className="font-display text-2xl text-white mb-3" style={{ textShadow: '0 0 20px rgba(0,245,255,0.3)' }}>{lp.name}</div>
-              <div className="flex flex-wrap justify-center sm:justify-start gap-5">
+              <div className="label mb-1.5">Season Leader</div>
+              <div className="font-display text-2xl font-400 mb-4" style={{ color: '#f0e6ff', textShadow: '0 0 20px rgba(255,45,120,0.3)' }}>{lp.name}</div>
+              <div className="flex flex-wrap justify-center sm:justify-start gap-6">
                 {[
-                  { val: leader.seasonPoints, label: 'Best 7', color: '#00f5ff' },
-                  { val: leader.wins, label: 'Победы', color: '#ff00ff' },
-                  { val: leader.totalKnockouts, label: 'Нокауты', color: '#7fff00' },
-                  { val: leader.gamesPlayed, label: 'Игр', color: 'rgba(224,224,255,0.5)' },
+                  { val: leader.seasonPoints, label: 'Best 7',  color: '#ff2d78' },
+                  { val: leader.wins,         label: 'Победы', color: '#00d4ff' },
+                  { val: leader.totalKnockouts, label: 'KO',   color: '#06ffa5' },
+                  { val: leader.gamesPlayed,  label: 'Игр',    color: 'rgba(240,230,255,0.4)' },
                 ].map(({ val, label, color }) => (
                   <div key={label} className="flex flex-col items-center sm:items-start">
-                    <span className="font-mono font-bold text-xl" style={{ color, textShadow: `0 0 8px ${color}66` }}>{val}</span>
+                    <span className="font-mono font-500 text-2xl" style={{ color, textShadow: `0 0 10px ${color}55` }}>{val}</span>
                     <span className="label" style={{ fontSize: '8px' }}>{label}</span>
                   </div>
                 ))}
@@ -78,52 +85,61 @@ export default function Leaderboard() {
         </div>
       )}
 
+      {/* Leaderboard table */}
       {board.length === 0 ? (
         <div className="card p-16 text-center">
-          <div className="text-white/20 mb-3 text-3xl">♣</div>
-          <div className="text-white/30 text-sm mb-6">Игры ещё не сыграны</div>
-          <Link to="/live/setup" className="btn btn-cyan">Начать игру</Link>
+          <div className="text-3xl mb-4 opacity-20">♣</div>
+          <div className="font-body text-sm mb-6" style={{ color: 'rgba(240,230,255,0.3)' }}>Игры ещё не сыграны</div>
+          <Link to="/live/setup" className="btn btn-pink">Начать игру</Link>
         </div>
       ) : (
         <div className="card overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/5 label text-[9px]">
+              <tr className="label text-[9px]" style={{ borderBottom: '1px solid rgba(255,45,120,0.1)' }}>
                 <th className="px-3 py-3 text-left w-10">#</th>
                 <th className="px-3 py-3 text-left">Игрок</th>
                 <th className="px-3 py-3 text-center hidden sm:table-cell">Игр</th>
-                <th className="px-3 py-3 text-center hidden sm:table-cell" style={{ color: 'rgba(255,0,255,0.5)' }}>W</th>
-                <th className="px-3 py-3 text-center hidden sm:table-cell" style={{ color: 'rgba(127,255,0,0.5)' }}>KO</th>
-                <th className="px-3 py-3 text-right" style={{ color: 'rgba(0,245,255,0.7)' }}>Best 7</th>
+                <th className="px-3 py-3 text-center hidden sm:table-cell" style={{ color: 'rgba(0,212,255,0.5)' }}>W</th>
+                <th className="px-3 py-3 text-center hidden sm:table-cell" style={{ color: 'rgba(6,255,165,0.5)' }}>KO</th>
+                <th className="px-3 py-3 text-right" style={{ color: 'rgba(255,45,120,0.7)' }}>Best 7</th>
               </tr>
             </thead>
             <tbody>
               {board.map((e, i) => {
                 const p = pmap[e.playerId]
                 return (
-                  <tr key={e.playerId} className="border-b border-white/[0.04] transition-all hover:bg-neon-cyan/[0.03]"
-                    style={i === 0 ? { background: 'rgba(0,245,255,0.03)' } : {}}>
+                  <tr key={e.playerId}
+                    className="transition-all"
+                    style={{
+                      borderBottom: '1px solid rgba(255,45,120,0.06)',
+                      background: i === 0 ? 'rgba(255,45,120,0.04)' : 'transparent',
+                    }}
+                    onMouseEnter={ev => ev.currentTarget.style.background = 'rgba(255,45,120,0.06)'}
+                    onMouseLeave={ev => ev.currentTarget.style.background = i === 0 ? 'rgba(255,45,120,0.04)' : 'transparent'}
+                  >
                     <td className="px-3 py-3">
                       {MEDAL[e.rank]
                         ? <span className={`text-lg ${i === 0 ? 'glow-pulse' : ''}`}>{MEDAL[e.rank]}</span>
-                        : <span className="font-mono text-sm text-white/25">{e.rank}</span>}
+                        : <span className="font-mono text-sm" style={{ color: 'rgba(240,230,255,0.25)' }}>{e.rank}</span>}
                     </td>
                     <td className="px-3 py-3">
-                      <Link to={`/player/${e.playerId}`} className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-                        <Avatar player={p} size={36} />
+                      <Link to={`/player/${e.playerId}`} className="flex items-center gap-2.5" style={{ opacity: 0.9 }}>
+                        <Avatar player={p} size={36} glow={i === 0 ? 'pink' : 'teal'} />
                         <div>
-                          <div className={`text-sm font-medium ${i === 0 ? 'text-white' : 'text-white/70'}`}>{p?.name || '—'}</div>
-                          <div className="text-[10px] text-white/30 font-mono sm:hidden">{e.gamesPlayed}г · {e.wins}W · {e.totalKnockouts}KO</div>
+                          <div className="font-body font-500 text-sm" style={{ color: i === 0 ? '#f0e6ff' : 'rgba(240,230,255,0.7)' }}>{p?.name || '—'}</div>
+                          <div className="font-mono text-[10px] sm:hidden" style={{ color: 'rgba(240,230,255,0.3)' }}>{e.gamesPlayed}г · {e.wins}W · {e.totalKnockouts}KO</div>
                         </div>
                       </Link>
                     </td>
-                    <td className="px-3 py-3 text-center font-mono text-sm text-white/35 hidden sm:table-cell">{e.gamesPlayed}</td>
-                    <td className="px-3 py-3 text-center font-mono text-sm hidden sm:table-cell" style={{ color: 'rgba(255,0,255,0.6)' }}>{e.wins}</td>
-                    <td className="px-3 py-3 text-center font-mono text-sm hidden sm:table-cell" style={{ color: 'rgba(127,255,0,0.6)' }}>{e.totalKnockouts}</td>
+                    <td className="px-3 py-3 text-center font-mono text-sm hidden sm:table-cell" style={{ color: 'rgba(240,230,255,0.35)' }}>{e.gamesPlayed}</td>
+                    <td className="px-3 py-3 text-center font-mono text-sm hidden sm:table-cell" style={{ color: 'rgba(0,212,255,0.6)' }}>{e.wins}</td>
+                    <td className="px-3 py-3 text-center font-mono text-sm hidden sm:table-cell" style={{ color: 'rgba(6,255,165,0.6)' }}>{e.totalKnockouts}</td>
                     <td className="px-3 py-3 text-right">
-                      <span className="font-mono font-bold text-lg" style={{ color: i === 0 ? '#00f5ff' : i === 1 ? 'rgba(224,224,255,0.8)' : 'rgba(224,224,255,0.5)', textShadow: i === 0 ? '0 0 8px rgba(0,245,255,0.6)' : 'none' }}>
-                        {e.seasonPoints}
-                      </span>
+                      <span className="font-mono font-500 text-lg" style={{
+                        color: i === 0 ? '#ff2d78' : i === 1 ? 'rgba(240,230,255,0.75)' : 'rgba(240,230,255,0.5)',
+                        textShadow: i === 0 ? '0 0 10px rgba(255,45,120,0.6)' : 'none'
+                      }}>{e.seasonPoints}</span>
                     </td>
                   </tr>
                 )
@@ -132,7 +148,7 @@ export default function Leaderboard() {
           </table>
         </div>
       )}
-      <p className="text-[10px] text-white/20 mt-3 text-right font-mono">* зачёт: 7 лучших результатов</p>
+      <p className="font-mono text-[10px] mt-3 text-right" style={{ color: 'rgba(240,230,255,0.2)' }}>* зачёт: 7 лучших результатов</p>
     </div>
   )
 }

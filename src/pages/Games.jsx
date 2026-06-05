@@ -1,49 +1,92 @@
 import { Link } from 'react-router-dom'
 import { useGames, usePlayers } from '../hooks/useData.js'
+import { deleteGame } from '../lib/db.js'
+import { isAdminLoggedIn } from '../lib/db.js'
 import { getResults } from '../data/scoring.js'
 import Avatar from '../components/Avatar.jsx'
+import { useToast } from '../components/Toast.jsx'
+
+function Spinner() {
+  return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: 'rgba(255,45,120,0.2)', borderTopColor: '#ff2d78' }} /></div>
+}
 
 export default function Games() {
   const { games, loading } = useGames()
   const { players } = usePlayers()
+  const toast = useToast()
+  const isAdmin = isAdminLoggedIn()
   const pmap = Object.fromEntries(players.map(p => [p.id, p]))
   const completed = games.filter(g => g.status === 'completed').sort((a, b) => b.date - a.date)
 
-  if (loading) return <div className="text-center py-20"><div className="w-8 h-8 border-2 border-neon-cyan/30 border-t-neon-cyan rounded-full animate-spin mx-auto" /></div>
+  if (loading) return <Spinner />
+
+  async function handleDelete(e, gameId) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!confirm('Удалить эту игру?')) return
+    await deleteGame(gameId)
+    toast('Игра удалена', 'error')
+  }
 
   if (completed.length === 0) return (
     <div className="text-center py-20">
-      <div className="text-white/20 text-3xl mb-4">♦</div>
-      <div className="text-white/30 text-sm mb-6">Игры ещё не сыграны</div>
-      <Link to="/live/setup" className="btn btn-cyan">Начать игру</Link>
+      <div className="text-3xl mb-4 opacity-20">♦</div>
+      <div className="font-body text-sm mb-6" style={{ color: 'rgba(240,230,255,0.3)' }}>Игры ещё не сыграны</div>
+      <Link to="/live/setup" className="btn btn-pink">Начать игру</Link>
     </div>
   )
 
   return (
     <div>
-      <div className="mb-5"><div className="label mb-1">История</div><h1 className="font-display text-lg text-white">Все игры</h1></div>
-      <div className="space-y-3">
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <div className="label mb-1">История</div>
+          <h1 className="font-display text-lg font-400" style={{ color: '#f0e6ff' }}>Все игры</h1>
+        </div>
+        <span className="font-mono text-xs" style={{ color: 'rgba(240,230,255,0.25)' }}>{completed.length} игр</span>
+      </div>
+
+      <div className="space-y-2">
         {completed.map(g => {
           const results = getResults(g).sort((a, b) => a.place - b.place)
           const winner = results[0]
           const wp = winner ? pmap[winner.playerId] : null
           const date = new Date(g.date).toLocaleDateString('ru', { day: 'numeric', month: 'short', year: 'numeric' })
+
           return (
-            <Link key={g.id} to={`/game/${g.id}`} className="block card p-4 hover:border-neon-cyan/25 transition-all">
+            <Link key={g.id} to={`/game/${g.id}`} className="group block card p-4 transition-all"
+              style={{ borderColor: 'rgba(255,45,120,0.12)' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,45,120,0.3)'}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,45,120,0.12)'}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className={g.isSpecial ? 'badge-special' : 'badge-season'}>{g.isSpecial ? 'Special' : 'Season'}</span>
-                  {g.title && <span className="text-sm text-white/60">{g.title}</span>}
+                  {g.title && <span className="font-body text-sm" style={{ color: 'rgba(240,230,255,0.6)' }}>{g.title}</span>}
                 </div>
-                <span className="font-mono text-xs text-white/25">{date}</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-xs" style={{ color: 'rgba(240,230,255,0.25)' }}>{date}</span>
+                  {isAdmin && (
+                    <button onClick={e => handleDelete(e, g.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 rounded"
+                      style={{ color: 'rgba(255,45,120,0.6)', border: '1px solid rgba(255,45,120,0.2)' }}>
+                      ✕
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {wp && <><Avatar player={wp} size={32} /><span className="text-sm text-white/70">{wp.name}</span><span className="text-[10px] font-mono neon-cyan ml-1">{winner.totalPoints}pts</span></>}
+                  {wp && (
+                    <>
+                      <Avatar player={wp} size={32} glow="pink" />
+                      <span className="font-body font-500 text-sm" style={{ color: 'rgba(240,230,255,0.7)' }}>{wp.name}</span>
+                      <span className="font-mono text-[10px] vc-pink">{winner.totalPoints}pts</span>
+                    </>
+                  )}
                 </div>
                 <div className="flex items-center gap-1">
-                  {results.slice(0, 5).map(r => <Avatar key={r.playerId} player={pmap[r.playerId]} size={24} />)}
-                  {results.length > 5 && <span className="text-[10px] text-white/30 ml-1">+{results.length - 5}</span>}
+                  {results.slice(0, 5).map(r => <Avatar key={r.playerId} player={pmap[r.playerId]} size={24} glow="teal" />)}
+                  {results.length > 5 && <span className="font-mono text-[10px] ml-1" style={{ color: 'rgba(240,230,255,0.3)' }}>+{results.length - 5}</span>}
                 </div>
               </div>
             </Link>
