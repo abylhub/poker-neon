@@ -190,7 +190,7 @@ export default function AdminDashboard() {
                   let text = `🃏 *${ann.title}*`
                   if (dateStr) text += `\n📅 ${dateStr}`
                   if (ann.description) text += `\n📍 ${ann.description}`
-                  text += `\n\n♠ Poker League`
+                  text += `\n\n♠ Poker League\nhttps://abylhub.github.io/poker-neon/`
                   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
                 }}
                   className="flex items-center gap-1.5 font-body text-sm px-3 py-1.5 rounded-lg transition-all"
