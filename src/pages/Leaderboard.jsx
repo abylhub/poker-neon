@@ -212,11 +212,11 @@ export default function Leaderboard() {
                                 <span className="font-sans font-500 text-sm" style={{ color: i === 0 ? '#f0e6ff' : 'rgba(232,222,255,0.65)' }}>{p?.name || '—'}</span>
                                 {isSeasonChamp && (
                                   <img src={`${BASE}poker.png`} alt="Чемпион сезона" title="Чемпион сезона"
-                                    style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
+                                    style={{ width: 40, height: 40, objectFit: 'contain', flexShrink: 0 }} />
                                 )}
                                 {isLastWinner && (
                                   <img src={`${BASE}winner.png`} alt="Победитель игры" title="Победитель последней игры"
-                                    style={{ width: 36, height: 20, objectFit: 'contain', flexShrink: 0 }} />
+                                    style={{ width: 56, height: 28, objectFit: 'contain', flexShrink: 0 }} />
                                 )}
                               </div>
                               <div className="font-mono text-[10px] sm:hidden" style={{ color: 'rgba(232,222,255,0.3)' }}>{e.gamesPlayed}г · {e.wins}W · {e.totalKnockouts}KO</div>
