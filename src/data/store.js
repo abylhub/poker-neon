@@ -95,6 +95,15 @@ export const eliminatePlayer = (gameId, victimId, killerId) => {
 export const getSettings = () => load(K.settings, { adminHash: null, leagueName: 'Poker League' })
 export const saveSettings = (s) => save(K.settings, s)
 
+// Champions (admin-set, stored locally)
+export const getChampions = () => load('pk2_champions', { seasonChampionName: 'Tanat', lastGameWinnerName: 'Almas' })
+export const saveChampions = (d) => save('pk2_champions', d)
+
+// Announcement (admin-set, stored locally)
+export const getAnnouncement = () => load('pk2_announcement', null)
+export const saveAnnouncement = (ann) => save('pk2_announcement', { ...ann, id: ann.id || crypto.randomUUID() })
+export const clearAnnouncement = () => { try { localStorage.removeItem('pk2_announcement') } catch {} }
+
 const sha256 = async (s) => {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('')
