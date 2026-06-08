@@ -2,8 +2,10 @@ import { useMemo, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePlayers, useGames, useActiveSeason } from '../hooks/useData.js'
 import { buildLeaderboard } from '../data/scoring.js'
-import { getAnnouncement } from '../data/store.js'
+import { getAnnouncement, getChampions } from '../data/store.js'
 import Avatar from '../components/Avatar.jsx'
+
+const BASE = import.meta.env.BASE_URL
 
 const RANK_SUIT  = { 1: '♠', 2: '♥', 3: '♦', 4: '♣' }
 const RANK_COLOR = { 1: '#ffd700', 2: '#c0c0c0', 3: '#cd7f32' }
@@ -57,18 +59,8 @@ export default function Leaderboard() {
   const leader = board[0]
   const lp     = leader ? pmap[leader.playerId] : null
 
-  // Season champion = current #1 on leaderboard
-  const seasonChampionId = board[0]?.playerId ?? null
-
-  // Last game winner = winner of most recent completed game
-  const lastGameWinnerId = useMemo(() => {
-    const last = [...games]
-      .filter(g => g.status === 'completed')
-      .sort((a, b) => (b.date || 0) - (a.date || 0))[0]
-    if (!last) return null
-    const win = last.eliminated?.find(e => e.place === 1) ?? last.results?.find(r => r.place === 1)
-    return win?.playerId ?? null
-  }, [games])
+  // Champions from admin store
+  const { seasonChampionId, lastGameWinnerId } = getChampions()
 
   // Announcement
   const ann = getAnnouncement()
@@ -192,8 +184,8 @@ export default function Leaderboard() {
                     const p = pmap[e.playerId]
                     const rankColor = RANK_COLOR[e.rank]
                     const isTop3 = e.rank <= 3
-                    const isSeasonChamp = e.playerId === seasonChampionId
-                    const isLastWinner  = e.playerId === lastGameWinnerId
+                    const isSeasonChamp = seasonChampionId && e.playerId === seasonChampionId
+                    const isLastWinner  = lastGameWinnerId && e.playerId === lastGameWinnerId
                     return (
                       <tr key={e.playerId}
                         className="transition-all"
@@ -212,24 +204,21 @@ export default function Leaderboard() {
                         </td>
                         <td className="px-4 py-3">
                           <Link to={`/player/${e.playerId}`} className="flex items-center gap-3">
-                            {/* Avatar with champion badge overlay */}
                             <div className="relative flex-shrink-0">
                               <Avatar player={p} size={36} glow={i === 0 ? 'gold' : 'pink'} />
-                              {isSeasonChamp && (
-                                <div className="absolute -top-1 -right-1 text-xs leading-none" title="Чемпион сезона"
-                                  style={{ textShadow: '0 0 6px rgba(255,215,0,0.8)', fontSize: '13px' }}>🏆</div>
-                              )}
-                              {isLastWinner && !isSeasonChamp && (
-                                <div className="absolute -top-1 -right-1 text-xs leading-none" title="Победитель последней игры"
-                                  style={{ textShadow: '0 0 6px rgba(255,45,120,0.8)', fontSize: '13px' }}>🥇</div>
-                              )}
-                              {isLastWinner && isSeasonChamp && (
-                                <div className="absolute -bottom-1 -right-1 text-xs leading-none" title="Победитель последней игры"
-                                  style={{ textShadow: '0 0 6px rgba(255,45,120,0.8)', fontSize: '11px' }}>🥇</div>
-                              )}
                             </div>
-                            <div>
-                              <div className="font-sans font-500 text-sm" style={{ color: i === 0 ? '#f0e6ff' : 'rgba(232,222,255,0.65)' }}>{p?.name || '—'}</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-sans font-500 text-sm" style={{ color: i === 0 ? '#f0e6ff' : 'rgba(232,222,255,0.65)' }}>{p?.name || '—'}</span>
+                                {isSeasonChamp && (
+                                  <img src={`${BASE}poker.png`} alt="Чемпион сезона" title="Чемпион сезона"
+                                    style={{ width: 22, height: 22, objectFit: 'contain', flexShrink: 0 }} />
+                                )}
+                                {isLastWinner && (
+                                  <img src={`${BASE}winner.png`} alt="Победитель игры" title="Победитель последней игры"
+                                    style={{ width: 36, height: 20, objectFit: 'contain', flexShrink: 0 }} />
+                                )}
+                              </div>
                               <div className="font-mono text-[10px] sm:hidden" style={{ color: 'rgba(232,222,255,0.3)' }}>{e.gamesPlayed}г · {e.wins}W · {e.totalKnockouts}KO</div>
                             </div>
                           </Link>
@@ -249,10 +238,7 @@ export default function Leaderboard() {
                 </tbody>
               </table>
               <div className="px-4 py-2 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,215,0,0.08)', background: 'rgba(255,215,0,0.02)' }}>
-                <div className="flex items-center gap-4">
-                  <span className="font-mono text-[10px]" style={{ color: 'rgba(232,222,255,0.2)' }}>* зачёт: 7 лучших результатов</span>
-                  <span className="font-mono text-[10px]" style={{ color: 'rgba(232,222,255,0.2)' }}>🏆 чемпион сезона · 🥇 победитель игры</span>
-                </div>
+                <span className="font-mono text-[10px]" style={{ color: 'rgba(232,222,255,0.2)' }}>* зачёт: 7 лучших результатов</span>
                 <span style={{ color: 'rgba(255,215,0,0.2)', fontFamily: 'serif', fontSize: 14, letterSpacing: 6 }}>♠ ♥ ♦ ♣</span>
               </div>
             </div>

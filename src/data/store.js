@@ -95,8 +95,8 @@ export const eliminatePlayer = (gameId, victimId, killerId) => {
 export const getSettings = () => load(K.settings, { adminHash: null, leagueName: 'Poker League' })
 export const saveSettings = (s) => save(K.settings, s)
 
-// Champions (admin-set, stored locally)
-export const getChampions = () => load('pk2_champions', { seasonChampionName: 'Tanat', lastGameWinnerName: 'Almas' })
+// Champions (admin-set, stored locally — stores player IDs)
+export const getChampions = () => load('pk2_champions', { seasonChampionId: null, lastGameWinnerId: null })
 export const saveChampions = (d) => save('pk2_champions', d)
 
 // Announcement (admin-set, stored locally)
