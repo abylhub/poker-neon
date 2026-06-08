@@ -206,17 +206,19 @@ export default function Leaderboard() {
                           <Link to={`/player/${e.playerId}`} className="flex items-center gap-3">
                             <div className="relative flex-shrink-0">
                               <Avatar player={p} size={36} glow={i === 0 ? 'gold' : 'pink'} />
-                              {isSeasonChamp && (
-                                <img src={`${BASE}poker.png`} alt="Чемпион сезона" title="Чемпион сезона"
-                                  style={{ position: 'absolute', bottom: -18, left: '50%', transform: 'translateX(-50%)', width: 56, height: 56, objectFit: 'contain', pointerEvents: 'none', mixBlendMode: 'screen' }} />
-                              )}
-                              {isLastWinner && (
-                                <img src={`${BASE}winner.png`} alt="Победитель игры" title="Победитель последней игры"
-                                  style={{ position: 'absolute', bottom: -14, left: '50%', transform: 'translateX(-50%)', width: 60, height: 30, objectFit: 'contain', pointerEvents: 'none', mixBlendMode: 'screen' }} />
-                              )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-sans font-500 text-sm" style={{ color: i === 0 ? '#f0e6ff' : 'rgba(232,222,255,0.65)' }}>{p?.name || '—'}</div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="font-sans font-500 text-sm" style={{ color: i === 0 ? '#f0e6ff' : 'rgba(232,222,255,0.65)' }}>{p?.name || '—'}</span>
+                                {isSeasonChamp && (
+                                  <img src={`${BASE}poker.png`} alt="Чемпион сезона" title="Чемпион сезона"
+                                    style={{ width: 40, height: 40, objectFit: 'contain', flexShrink: 0 }} />
+                                )}
+                                {isLastWinner && (
+                                  <img src={`${BASE}winner.png`} alt="Победитель игры" title="Победитель последней игры"
+                                    style={{ width: 56, height: 28, objectFit: 'contain', flexShrink: 0 }} />
+                                )}
+                              </div>
                               <div className="font-mono text-[10px] sm:hidden" style={{ color: 'rgba(232,222,255,0.3)' }}>{e.gamesPlayed}г · {e.wins}W · {e.totalKnockouts}KO</div>
                             </div>
                           </Link>
