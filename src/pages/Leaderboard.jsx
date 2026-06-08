@@ -208,11 +208,11 @@ export default function Leaderboard() {
                               <Avatar player={p} size={36} glow={i === 0 ? 'gold' : 'pink'} />
                               {isSeasonChamp && (
                                 <img src={`${BASE}poker.png`} alt="Чемпион сезона" title="Чемпион сезона"
-                                  style={{ position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)', width: 44, height: 44, objectFit: 'contain', pointerEvents: 'none' }} />
+                                  style={{ position: 'absolute', bottom: -14, left: '50%', transform: 'translateX(-50%)', width: 36, height: 36, objectFit: 'contain', pointerEvents: 'none' }} />
                               )}
                               {isLastWinner && (
                                 <img src={`${BASE}winner.png`} alt="Победитель игры" title="Победитель последней игры"
-                                  style={{ position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)', width: 52, height: 26, objectFit: 'contain', pointerEvents: 'none' }} />
+                                  style={{ position: 'absolute', bottom: -12, left: '50%', transform: 'translateX(-50%)', width: 48, height: 24, objectFit: 'contain', pointerEvents: 'none' }} />
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
