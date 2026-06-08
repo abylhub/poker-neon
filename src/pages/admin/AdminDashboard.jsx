@@ -110,7 +110,7 @@ export default function AdminDashboard() {
           <form onSubmit={handleSaveChampions} className="space-y-3">
             <div>
               <label className="flex items-center gap-2 font-body text-xs mb-1.5" style={{ color: 'rgba(240,230,255,0.4)' }}>
-                <img src={`${BASE}poker.png`} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
+                <img src={`${BASE}poker1.png`} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
                 Чемпион сезона
               </label>
               <select value={seasonChampId} onChange={e => setSeasonChampId(e.target.value)} style={selectStyle}>
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <label className="flex items-center gap-2 font-body text-xs mb-1.5" style={{ color: 'rgba(240,230,255,0.4)' }}>
-                <img src={`${BASE}winner.png`} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
+                <img src={`${BASE}winner1.png`} alt="" style={{ width: 20, height: 20, objectFit: 'contain' }} />
                 Победитель последней игры
               </label>
               <select value={lastWinnerId} onChange={e => setLastWinnerId(e.target.value)} style={selectStyle}>
