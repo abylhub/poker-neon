@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { adminLogout, addSeason, closeSeason } from '../../lib/db.js'
 import { usePlayers, useGames, useActiveSeason } from '../../hooks/useData.js'
-import { getChampions, saveChampions, getAnnouncement, saveAnnouncement, clearAnnouncement } from '../../data/store.js'
+import { getAnnouncement, saveAnnouncement, clearAnnouncement } from '../../data/store.js'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
@@ -14,24 +14,12 @@ export default function AdminDashboard() {
   async function newSeason() { const n = prompt('Название сезона:', `Сезон ${new Date().getFullYear()}`); if (n) await addSeason(n) }
   async function endSeason() { if (season && confirm(`Закрыть "${season.name}"?`)) await closeSeason(season.id) }
 
-  // Champions
-  const [champs, setChamps] = useState(() => getChampions())
-  const [champSaved, setChampSaved] = useState(false)
-
-  function handleSaveChampions(e) {
-    e.preventDefault()
-    saveChampions({ seasonChampionName: champs.seasonChampionName, lastGameWinnerName: champs.lastGameWinnerName })
-    setChampSaved(true)
-    setTimeout(() => setChampSaved(false), 2000)
-  }
-
   // Announcement
   const existingAnn = getAnnouncement()
   const [annTitle, setAnnTitle] = useState(existingAnn?.title || '')
-  const [annDate, setAnnDate] = useState(existingAnn?.gameDate ? new Date(existingAnn.gameDate).toISOString().slice(0, 16) : '')
-  const [annDesc, setAnnDesc] = useState(existingAnn?.description || '')
+  const [annDate, setAnnDate]   = useState(existingAnn?.gameDate ? new Date(existingAnn.gameDate).toISOString().slice(0, 16) : '')
+  const [annDesc, setAnnDesc]   = useState(existingAnn?.description || '')
   const [annSaved, setAnnSaved] = useState(false)
-  const [notifSent, setNotifSent] = useState(false)
   const [, rerender] = useState(0)
 
   function handleSaveAnnouncement(e) {
@@ -53,25 +41,6 @@ export default function AdminDashboard() {
     rerender(n => n + 1)
   }
 
-  async function handleSendNotification() {
-    const ann = getAnnouncement()
-    if (!ann) return
-    const reg = await navigator.serviceWorker?.ready
-    if (!reg) return
-    const perm = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission
-    if (perm !== 'granted') return
-    reg.showNotification(ann.title || 'Poker League', {
-      body: ann.description || (ann.gameDate
-        ? new Date(ann.gameDate).toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
-        : ''),
-      icon: '/poker-neon/favicon.svg',
-      badge: '/poker-neon/favicon.svg',
-      tag: 'poker-announcement',
-    })
-    setNotifSent(true)
-    setTimeout(() => setNotifSent(false), 3000)
-  }
-
   const currentAnn = getAnnouncement()
 
   return (
@@ -85,7 +54,10 @@ export default function AdminDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          {[{ val: players.length, label: 'Игроков', color: '#ff2d78' }, { val: games.filter(g => g.status === 'completed').length, label: 'Игр', color: '#00d4ff' }].map(({ val, label, color }) => (
+          {[
+            { val: players.length, label: 'Игроков', color: '#ff2d78' },
+            { val: games.filter(g => g.status === 'completed').length, label: 'Игр', color: '#00d4ff' },
+          ].map(({ val, label, color }) => (
             <div key={label} className="card p-4 text-center" style={{ borderColor: `${color}25` }}>
               <div className="font-mono font-500 text-2xl mb-1" style={{ color, textShadow: `0 0 10px ${color}55` }}>{val}</div>
               <div className="label">{label}</div>
@@ -106,36 +78,6 @@ export default function AdminDashboard() {
                 <button onClick={newSeason} className="btn btn-teal" style={{ padding: '6px 12px' }}>Создать</button>
               </div>
           }
-        </div>
-
-        {/* Champions */}
-        <div className="card p-4 mb-4">
-          <div className="label mb-3">Чемпионы</div>
-          <form onSubmit={handleSaveChampions} className="space-y-3">
-            <div>
-              <label className="block font-body text-xs mb-1" style={{ color: 'rgba(240,230,255,0.4)' }}>🏆 Чемпион сезона</label>
-              <input
-                value={champs.seasonChampionName}
-                onChange={e => setChamps(c => ({ ...c, seasonChampionName: e.target.value }))}
-                placeholder="Имя чемпиона"
-                className="w-full font-body text-sm px-3 py-2 rounded outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,215,0,0.15)', color: 'rgba(240,230,255,0.8)' }}
-              />
-            </div>
-            <div>
-              <label className="block font-body text-xs mb-1" style={{ color: 'rgba(240,230,255,0.4)' }}>🥇 Победитель последней игры</label>
-              <input
-                value={champs.lastGameWinnerName}
-                onChange={e => setChamps(c => ({ ...c, lastGameWinnerName: e.target.value }))}
-                placeholder="Имя победителя"
-                className="w-full font-body text-sm px-3 py-2 rounded outline-none"
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,45,120,0.15)', color: 'rgba(240,230,255,0.8)' }}
-              />
-            </div>
-            <button type="submit" className="btn btn-gold" style={{ padding: '6px 16px', opacity: champSaved ? 0.6 : 1 }}>
-              {champSaved ? '✓ Сохранено' : 'Сохранить'}
-            </button>
-          </form>
         </div>
 
         {/* Announcement */}
@@ -189,34 +131,20 @@ export default function AdminDashboard() {
                 style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,230,255,0.8)' }}
               />
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <button type="submit" className="btn btn-teal" style={{ padding: '6px 16px', opacity: annSaved ? 0.6 : 1 }}>
-                {annSaved ? '✓ Опубликовано' : 'Опубликовать'}
-              </button>
-              {currentAnn && (
-                <button
-                  type="button"
-                  onClick={handleSendNotification}
-                  className="btn"
-                  style={{
-                    padding: '6px 16px',
-                    border: '1px solid rgba(0,212,255,0.3)',
-                    color: notifSent ? 'rgba(0,255,159,0.8)' : 'rgba(0,212,255,0.7)',
-                    background: 'rgba(0,212,255,0.04)',
-                    opacity: notifSent ? 0.7 : 1,
-                  }}
-                >
-                  {notifSent ? '✓ Отправлено' : '🔔 Уведомление'}
-                </button>
-              )}
-            </div>
+            <button type="submit" className="btn btn-teal" style={{ padding: '6px 16px', opacity: annSaved ? 0.6 : 1 }}>
+              {annSaved ? '✓ Опубликовано' : 'Опубликовать'}
+            </button>
           </form>
         </div>
 
         {/* Nav links */}
         <div className="space-y-2">
-          {[{ to: '/admin/players', label: 'Управление игроками' }, { to: '/live/setup', label: 'Начать новую игру' }].map(({ to, label }) => (
-            <Link key={to} to={to} className="flex items-center justify-between card p-4 transition-all font-body font-500 text-sm"
+          {[
+            { to: '/admin/players', label: 'Управление игроками' },
+            { to: '/live/setup',    label: 'Начать новую игру' },
+          ].map(({ to, label }) => (
+            <Link key={to} to={to}
+              className="flex items-center justify-between card p-4 transition-all font-body font-500 text-sm"
               style={{ color: 'rgba(240,230,255,0.6)' }}
               onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,45,120,0.3)'}
               onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,45,120,0.15)'}>

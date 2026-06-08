@@ -2,7 +2,7 @@ import { useMemo, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { usePlayers, useGames, useActiveSeason } from '../hooks/useData.js'
 import { buildLeaderboard } from '../data/scoring.js'
-import { getChampions, getAnnouncement } from '../data/store.js'
+import { getAnnouncement } from '../data/store.js'
 import Avatar from '../components/Avatar.jsx'
 
 const RANK_SUIT  = { 1: '♠', 2: '♥', 3: '♦', 4: '♣' }
@@ -13,34 +13,6 @@ function Spinner() {
     <div className="flex flex-col items-center justify-center py-24 gap-4">
       <div className="text-3xl" style={{ color: 'rgba(255,215,0,0.3)', animation: 'spin 2s linear infinite', display: 'inline-block' }}>♠</div>
       <div className="label">Загрузка...</div>
-    </div>
-  )
-}
-
-function ChampionBadges({ seasonName, lastWinnerName }) {
-  if (!seasonName && !lastWinnerName) return null
-  return (
-    <div className="grid grid-cols-2 gap-3 mb-6">
-      {seasonName && (
-        <div className="card p-4 relative overflow-hidden" style={{ borderColor: 'rgba(255,215,0,0.3)', background: 'rgba(255,215,0,0.04)' }}>
-          <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,215,0,0.12), transparent)', transform: 'translate(30%,-30%)' }} />
-          <div className="label mb-1.5" style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'rgba(255,215,0,0.5)' }}>Чемпион сезона</div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🏆</span>
-            <span className="font-body font-600 text-sm truncate" style={{ color: '#ffd700', textShadow: '0 0 12px rgba(255,215,0,0.4)' }}>{seasonName}</span>
-          </div>
-        </div>
-      )}
-      {lastWinnerName && (
-        <div className="card p-4 relative overflow-hidden" style={{ borderColor: 'rgba(255,45,120,0.3)', background: 'rgba(255,45,120,0.04)' }}>
-          <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(255,45,120,0.12), transparent)', transform: 'translate(30%,-30%)' }} />
-          <div className="label mb-1.5" style={{ fontSize: '9px', letterSpacing: '0.3em', color: 'rgba(255,45,120,0.5)' }}>Победитель игры</div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🥇</span>
-            <span className="font-body font-600 text-sm truncate" style={{ color: '#ff2d78', textShadow: '0 0 12px rgba(255,45,120,0.4)' }}>{lastWinnerName}</span>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -60,9 +32,12 @@ function AnnouncementBanner({ ann, onDismiss }) {
           {dateStr && <div className="font-mono text-xs mt-0.5" style={{ color: 'rgba(0,212,255,0.8)' }}>{dateStr}</div>}
           {ann.description && <div className="font-body text-xs mt-1" style={{ color: 'rgba(240,230,255,0.45)' }}>{ann.description}</div>}
         </div>
-        <button onClick={onDismiss} style={{ color: 'rgba(240,230,255,0.2)', fontSize: '1.2rem', lineHeight: 1, flexShrink: 0 }}
+        <button
+          onClick={onDismiss}
+          style={{ color: 'rgba(240,230,255,0.2)', fontSize: '1.2rem', lineHeight: 1, flexShrink: 0 }}
           onMouseEnter={e => e.currentTarget.style.color = 'rgba(240,230,255,0.6)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'rgba(240,230,255,0.2)'}>×</button>
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(240,230,255,0.2)'}
+        >×</button>
       </div>
     </div>
   )
@@ -82,32 +57,28 @@ export default function Leaderboard() {
   const leader = board[0]
   const lp     = leader ? pmap[leader.playerId] : null
 
-  // Champions
-  const champs = getChampions()
+  // Season champion = current #1 on leaderboard
+  const seasonChampionId = board[0]?.playerId ?? null
+
+  // Last game winner = winner of most recent completed game
+  const lastGameWinnerId = useMemo(() => {
+    const last = [...games]
+      .filter(g => g.status === 'completed')
+      .sort((a, b) => (b.date || 0) - (a.date || 0))[0]
+    if (!last) return null
+    const win = last.eliminated?.find(e => e.place === 1) ?? last.results?.find(r => r.place === 1)
+    return win?.playerId ?? null
+  }, [games])
 
   // Announcement
   const ann = getAnnouncement()
-  const [dismissed, setDismissed] = useState(() => {
-    if (!ann) return false
-    return localStorage.getItem('pk2_ann_dismissed') === ann.id
-  })
-
-  // Show notification when announcement appears
-  useEffect(() => {
-    if (!ann || dismissed) return
-    if (!('Notification' in window)) return
-    if (localStorage.getItem('pk2_ann_notified') === ann.id) return
-    const notify = () => {
-      new Notification(ann.title || 'Poker League', {
-        body: ann.description || '',
-        icon: '/poker-neon/favicon.svg',
-        tag: 'poker-announcement',
-      })
-      localStorage.setItem('pk2_ann_notified', ann.id)
-    }
-    if (Notification.permission === 'granted') notify()
-    else if (Notification.permission === 'default') Notification.requestPermission().then(p => { if (p === 'granted') notify() })
-  }, [ann, dismissed])
+  const [dismissed, setDismissed] = useState(() =>
+    ann ? localStorage.getItem('pk2_ann_dismissed') === ann.id : false
+  )
+  function handleDismiss() {
+    if (ann) localStorage.setItem('pk2_ann_dismissed', ann.id)
+    setDismissed(true)
+  }
 
   // PWA install prompt
   const [installPrompt, setInstallPrompt] = useState(null)
@@ -119,23 +90,12 @@ export default function Leaderboard() {
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
-  function handleDismiss() {
-    if (ann) localStorage.setItem('pk2_ann_dismissed', ann.id)
-    setDismissed(true)
-  }
-
   if (sl || pl || gl) return <Spinner />
 
   return (
     <div>
-      {/* Announcement */}
+      {/* Announcement — always at top */}
       {!dismissed && ann && <AnnouncementBanner ann={ann} onDismiss={handleDismiss} />}
-
-      {/* Champion badges — always visible */}
-      <ChampionBadges
-        seasonName={champs.seasonChampionName}
-        lastWinnerName={champs.lastGameWinnerName}
-      />
 
       {!season ? (
         <div className="text-center py-16">
@@ -232,6 +192,8 @@ export default function Leaderboard() {
                     const p = pmap[e.playerId]
                     const rankColor = RANK_COLOR[e.rank]
                     const isTop3 = e.rank <= 3
+                    const isSeasonChamp = e.playerId === seasonChampionId
+                    const isLastWinner  = e.playerId === lastGameWinnerId
                     return (
                       <tr key={e.playerId}
                         className="transition-all"
@@ -250,7 +212,22 @@ export default function Leaderboard() {
                         </td>
                         <td className="px-4 py-3">
                           <Link to={`/player/${e.playerId}`} className="flex items-center gap-3">
-                            <Avatar player={p} size={36} glow={i === 0 ? 'gold' : 'pink'} />
+                            {/* Avatar with champion badge overlay */}
+                            <div className="relative flex-shrink-0">
+                              <Avatar player={p} size={36} glow={i === 0 ? 'gold' : 'pink'} />
+                              {isSeasonChamp && (
+                                <div className="absolute -top-1 -right-1 text-xs leading-none" title="Чемпион сезона"
+                                  style={{ textShadow: '0 0 6px rgba(255,215,0,0.8)', fontSize: '13px' }}>🏆</div>
+                              )}
+                              {isLastWinner && !isSeasonChamp && (
+                                <div className="absolute -top-1 -right-1 text-xs leading-none" title="Победитель последней игры"
+                                  style={{ textShadow: '0 0 6px rgba(255,45,120,0.8)', fontSize: '13px' }}>🥇</div>
+                              )}
+                              {isLastWinner && isSeasonChamp && (
+                                <div className="absolute -bottom-1 -right-1 text-xs leading-none" title="Победитель последней игры"
+                                  style={{ textShadow: '0 0 6px rgba(255,45,120,0.8)', fontSize: '11px' }}>🥇</div>
+                              )}
+                            </div>
                             <div>
                               <div className="font-sans font-500 text-sm" style={{ color: i === 0 ? '#f0e6ff' : 'rgba(232,222,255,0.65)' }}>{p?.name || '—'}</div>
                               <div className="font-mono text-[10px] sm:hidden" style={{ color: 'rgba(232,222,255,0.3)' }}>{e.gamesPlayed}г · {e.wins}W · {e.totalKnockouts}KO</div>
@@ -272,7 +249,10 @@ export default function Leaderboard() {
                 </tbody>
               </table>
               <div className="px-4 py-2 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,215,0,0.08)', background: 'rgba(255,215,0,0.02)' }}>
-                <span className="font-mono text-[10px]" style={{ color: 'rgba(232,222,255,0.2)' }}>* зачёт: 7 лучших результатов</span>
+                <div className="flex items-center gap-4">
+                  <span className="font-mono text-[10px]" style={{ color: 'rgba(232,222,255,0.2)' }}>* зачёт: 7 лучших результатов</span>
+                  <span className="font-mono text-[10px]" style={{ color: 'rgba(232,222,255,0.2)' }}>🏆 чемпион сезона · 🥇 победитель игры</span>
+                </div>
                 <span style={{ color: 'rgba(255,215,0,0.2)', fontFamily: 'serif', fontSize: 14, letterSpacing: 6 }}>♠ ♥ ♦ ♣</span>
               </div>
             </div>
