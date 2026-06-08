@@ -211,11 +211,11 @@ export default function Leaderboard() {
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="font-sans font-500 text-sm" style={{ color: i === 0 ? '#f0e6ff' : 'rgba(232,222,255,0.65)' }}>{p?.name || '—'}</span>
                                 {isSeasonChamp && (
-                                  <img src={`${BASE}poker1.png`} alt="Чемпион сезона" title="Чемпион сезона"
+                                  <img src={`${BASE}poker1.png?v=2`} alt="Чемпион сезона" title="Чемпион сезона"
                                     style={{ height: 20, width: 'auto', objectFit: 'contain', flexShrink: 0 }} />
                                 )}
                                 {isLastWinner && (
-                                  <img src={`${BASE}winner1.png`} alt="Победитель игры" title="Победитель последней игры"
+                                  <img src={`${BASE}winner1.png?v=2`} alt="Победитель игры" title="Победитель последней игры"
                                     style={{ height: 20, width: 'auto', objectFit: 'contain', flexShrink: 0 }} />
                                 )}
                               </div>
