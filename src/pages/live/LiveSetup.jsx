@@ -13,7 +13,7 @@ export default function LiveSetup() {
   const [title, setTitle] = useState('')
   const [desc, setDesc] = useState('')
   const [sel, setSel] = useState([])
-  const [blindMinutes, setBlindMinutes] = useState(15)
+  const [blindMinutes, setBlindMinutes] = useState(20)
   const [loading, setLoading] = useState(false)
 
   const toggle = id => setSel(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
@@ -82,7 +82,7 @@ export default function LiveSetup() {
       <div className="card p-4 mb-4">
         <div className="label mb-3">Таймер блайндов · минут на уровень</div>
         <div className="flex gap-2">
-          {[[null, 'Выкл'], [10, '10'], [15, '15'], [20, '20']].map(([v, label]) => (
+          {[[null, 'Выкл'], [20, '20'], [25, '25'], [30, '30']].map(([v, label]) => (
             <button key={label} onClick={() => setBlindMinutes(v)}
               className="flex-1 py-2.5 rounded font-mono text-sm transition-all"
               style={blindMinutes === v
