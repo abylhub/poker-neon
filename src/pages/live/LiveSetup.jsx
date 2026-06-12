@@ -13,7 +13,7 @@ export default function LiveSetup() {
   const [title, setTitle] = useState('')
   const [desc, setDesc] = useState('')
   const [sel, setSel] = useState([])
-  const [blindMinutes, setBlindMinutes] = useState(20)
+  const [blindMinutes, setBlindMinutes] = useState(30)
   const [loading, setLoading] = useState(false)
 
   const toggle = id => setSel(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
