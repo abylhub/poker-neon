@@ -3,6 +3,11 @@ import {
   collection, doc, getDoc, getDocs, addDoc, setDoc,
   updateDoc, deleteDoc, onSnapshot, query, where, orderBy
 } from 'firebase/firestore'
+import { getTimerState } from '../data/blinds.js'
+
+const requireAdmin = () => {
+  if (!isAdminLoggedIn()) throw new Error('Удалять может только администратор')
+}
 
 // ─── SHA-256 hash ───────────────────────────────────────────────────────────
 export const sha256 = async (s) => {
@@ -59,6 +64,7 @@ export const closeSeason = async (id) => {
 
 // Удалить сезон + все его игры
 export const deleteSeason = async (id) => {
+  requireAdmin()
   // Удаляем все игры сезона
   const q = query(collection(db, 'games'), where('seasonId', '==', id))
   const snap = await getDocs(q)
@@ -85,16 +91,83 @@ export const getLiveGame = async () => {
   return { id: snap.docs[0].id, ...snap.docs[0].data() }
 }
 
-export const createLiveGame = async ({ type, seasonId, title, description, playerIds }) => {
+const shuffle = (arr) => {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+export const createLiveGame = async ({ type, seasonId, title, description, playerIds, blindMinutes }) => {
+  const seating = shuffle(playerIds)
   const ref = await addDoc(collection(db, 'games'), {
+    seating, dealerSeat: Math.floor(Math.random() * seating.length),
     type, seasonId: seasonId || null,
     isSpecial: type === 'special',
     title: title || null, description: description || null,
     date: Date.now(), status: 'live',
     playerIds, eliminated: [], knockouts: {},
+    blindTimer: blindMinutes
+      ? { levelMinutes: blindMinutes, startedAt: Date.now(), pausedAt: null, pausedTotal: 0 }
+      : null,
     createdAt: Date.now(),
   })
   return { id: ref.id }
+}
+
+// ─── Рассадка ───────────────────────────────────────────────────────────────
+// Перемешать места (только пока никто не выбыл)
+export const shuffleSeating = async (gameId) => {
+  const game = await getGame(gameId)
+  if (!game || game.eliminated?.length) return
+  const seating = shuffle(game.playerIds)
+  await updateDoc(doc(db, 'games', gameId), {
+    seating, dealerSeat: Math.floor(Math.random() * seating.length),
+  })
+}
+
+// Передвинуть кнопку дилера на следующего не выбывшего игрока
+export const advanceDealer = async (gameId) => {
+  const game = await getGame(gameId)
+  const seating = game?.seating?.length ? game.seating : game?.playerIds
+  if (!seating?.length) return
+  const elim = new Set((game.eliminated || []).map(e => e.playerId))
+  let i = game.dealerSeat ?? 0
+  for (let step = 0; step < seating.length; step++) {
+    i = (i + 1) % seating.length
+    if (!elim.has(seating[i])) break
+  }
+  await updateDoc(doc(db, 'games', gameId), { dealerSeat: i })
+}
+
+// ─── Таймер блайндов ────────────────────────────────────────────────────────
+export const pauseBlindTimer = async (gameId) => {
+  const game = await getGame(gameId)
+  const t = game?.blindTimer
+  if (!t || t.pausedAt) return
+  await updateDoc(doc(db, 'games', gameId), { 'blindTimer.pausedAt': Date.now() })
+}
+
+export const resumeBlindTimer = async (gameId) => {
+  const game = await getGame(gameId)
+  const t = game?.blindTimer
+  if (!t?.pausedAt) return
+  await updateDoc(doc(db, 'games', gameId), {
+    'blindTimer.pausedAt': null,
+    'blindTimer.pausedTotal': (t.pausedTotal || 0) + (Date.now() - t.pausedAt),
+  })
+}
+
+// Пропустить уровень: сдвигаем startedAt назад на остаток текущего уровня
+export const skipBlindLevel = async (gameId) => {
+  const game = await getGame(gameId)
+  const t = game?.blindTimer
+  if (!t) return
+  const st = getTimerState(t)
+  if (!st || st.remainingMs == null) return
+  await updateDoc(doc(db, 'games', gameId), { 'blindTimer.startedAt': t.startedAt - st.remainingMs })
 }
 
 const PTS = { 1: 25, 2: 18, 3: 15, 4: 12, 5: 10, 6: 8, 7: 6, 8: 4, 9: 2, 10: 1 }
@@ -138,6 +211,7 @@ export const eliminatePlayer = async (gameId, victimId, killerId) => {
 }
 
 export const deleteGame = async (id) => {
+  requireAdmin()
   await deleteDoc(doc(db, 'games', id))
 }
 

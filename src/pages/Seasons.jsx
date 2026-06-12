@@ -14,8 +14,12 @@ export default function Seasons() {
       ? `Удалить сезон "${season.name}" и ${gameCount} игр в нём? Это действие необратимо.`
       : `Удалить сезон "${season.name}"?`
     if (!confirm(msg)) return
-    await deleteSeason(season.id)
-    toast(`Сезон "${season.name}" удалён`, 'error')
+    try {
+      await deleteSeason(season.id)
+      toast(`Сезон "${season.name}" удалён`, 'error')
+    } catch (err) {
+      toast(err.message, 'error')
+    }
   }
 
   async function handleClose(season) {

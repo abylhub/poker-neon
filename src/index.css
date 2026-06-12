@@ -12,94 +12,90 @@
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
   }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: #07050f; }
-  ::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.25); border-radius: 2px; }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(240,230,255,0.12); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,215,0,0.3); }
+  ::selection { background: rgba(255,45,120,0.35); }
 }
 
 @layer components {
 
-  /* ── Cards — cyberpunk casino style ── */
-  .card {
-    background: rgba(13,10,26,0.9);
-    border: 1px solid rgba(255,215,0,0.15);
-    border-radius: 4px;
-    backdrop-filter: blur(12px);
+  /* ── Cards — glass surface ── */
+  .card,
+  .card-plain,
+  .card-green,
+  .card-pink {
+    background: linear-gradient(165deg, rgba(26,20,48,0.72) 0%, rgba(13,10,26,0.88) 100%);
+    border: 1px solid rgba(240,230,255,0.08);
+    border-radius: 18px;
+    backdrop-filter: blur(16px);
+    box-shadow:
+      0 12px 36px rgba(0,0,0,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.05);
     position: relative;
   }
-  /* Card corners — playing card style */
-  .card::before {
-    content: '♠';
-    position: absolute; top: 6px; left: 8px;
-    font-size: 9px; color: rgba(255,45,120,0.3);
-    font-family: serif; line-height: 1;
-    pointer-events: none;
-  }
-  .card::after {
-    content: '♠';
-    position: absolute; bottom: 6px; right: 8px;
-    font-size: 9px; color: rgba(255,45,120,0.3);
-    font-family: serif; line-height: 1;
-    pointer-events: none;
-    transform: rotate(180deg);
-  }
-  .card-plain {
-    background: rgba(13,10,26,0.9);
-    border: 1px solid rgba(255,215,0,0.15);
-    border-radius: 4px;
-    backdrop-filter: blur(12px);
-  }
-  .card-green {
-    background: rgba(13,10,26,0.9);
-    border: 1px solid rgba(0,255,159,0.2);
-    border-radius: 4px;
-    backdrop-filter: blur(12px);
-  }
-  .card-pink {
-    background: rgba(13,10,26,0.9);
-    border: 1px solid rgba(255,45,120,0.25);
-    border-radius: 4px;
-    backdrop-filter: blur(12px);
+  .card-green { border-color: rgba(0,255,159,0.16); }
+  .card-pink  { border-color: rgba(255,45,120,0.2); }
+  .card-purple {
+    background: linear-gradient(165deg, rgba(30,18,55,0.72) 0%, rgba(13,10,26,0.88) 100%);
+    border: 1px solid rgba(139,0,255,0.22);
+    border-radius: 18px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05);
   }
 
-  /* ── Buttons ── */
+  /* ── Buttons — soft pills ── */
   .btn {
     display: inline-flex; align-items: center; justify-content: center;
     font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600;
-    letter-spacing: 0.15em; text-transform: uppercase;
-    padding: 10px 22px; border-radius: 2px;
-    transition: all 0.2s; cursor: pointer; border: none; outline: none;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 10px 22px; border-radius: 12px;
+    transition: all 0.22s ease; cursor: pointer; border: none; outline: none;
   }
-  .btn-pink  { border: 1px solid #ff2d78; color: #ff2d78; background: transparent; }
-  .btn-pink:hover  { background: #ff2d78; color: #07050f; box-shadow: 0 0 25px rgba(255,45,120,0.55), 0 0 50px rgba(255,45,120,0.2); }
-  .btn-gold  { border: 1px solid #ffd700; color: #ffd700; background: transparent; }
-  .btn-gold:hover  { background: #ffd700; color: #07050f; box-shadow: 0 0 25px rgba(255,215,0,0.5); }
-  .btn-green { border: 1px solid #00ff9f; color: #00ff9f; background: transparent; }
-  .btn-green:hover { background: #00ff9f; color: #07050f; box-shadow: 0 0 25px rgba(0,255,159,0.5); }
-  .btn-solid { background: linear-gradient(135deg, #ff2d78 0%, #b01050 100%); color: #fff; border: 1px solid #ff2d78; font-weight: 700; letter-spacing: 0.12em; }
-  .btn-solid:hover { box-shadow: 0 0 30px rgba(255,45,120,0.6), 0 0 60px rgba(255,45,120,0.2); }
+  .btn:not(:disabled):hover { transform: translateY(-1px); }
+  .btn:not(:disabled):active { transform: translateY(0); }
+  .btn-pink  { border: 1px solid rgba(255,45,120,0.45); color: #ff5e97; background: rgba(255,45,120,0.08); }
+  .btn-pink:hover  { background: rgba(255,45,120,0.18); border-color: #ff2d78; box-shadow: 0 6px 24px rgba(255,45,120,0.3); }
+  .btn-gold  { border: 1px solid rgba(255,215,0,0.4); color: #ffd700; background: rgba(255,215,0,0.07); }
+  .btn-gold:hover  { background: rgba(255,215,0,0.15); border-color: #ffd700; box-shadow: 0 6px 24px rgba(255,215,0,0.25); }
+  .btn-green { border: 1px solid rgba(0,255,159,0.4); color: #00ff9f; background: rgba(0,255,159,0.06); }
+  .btn-green:hover { background: rgba(0,255,159,0.14); border-color: #00ff9f; box-shadow: 0 6px 24px rgba(0,255,159,0.25); }
+  .btn-cyan  { border: 1px solid rgba(0,207,255,0.4); color: #4fdcff; background: rgba(0,207,255,0.06); }
+  .btn-cyan:hover  { background: rgba(0,207,255,0.14); border-color: #00cfff; box-shadow: 0 6px 24px rgba(0,207,255,0.25); }
+  .btn-teal  { border: 1px solid rgba(0,207,255,0.4); color: #4fdcff; background: rgba(0,207,255,0.06); }
+  .btn-teal:hover  { background: rgba(0,207,255,0.14); border-color: #00cfff; box-shadow: 0 6px 24px rgba(0,207,255,0.25); }
+  .btn-solid {
+    background: linear-gradient(135deg, #ff2d78 0%, #c01458 100%);
+    color: #fff; border: 1px solid rgba(255,255,255,0.12);
+    font-weight: 700; letter-spacing: 0.1em;
+    box-shadow: 0 6px 20px rgba(255,45,120,0.3);
+  }
+  .btn-solid:hover { box-shadow: 0 10px 32px rgba(255,45,120,0.45); }
   .btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  /* ── Neon text ── */
-  .neon-pink   { color: #ff2d78; text-shadow: 0 0 10px rgba(255,45,120,0.9), 0 0 30px rgba(255,45,120,0.4); }
-  .neon-gold   { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.8), 0 0 30px rgba(255,215,0,0.3); }
-  .neon-green  { color: #00ff9f; text-shadow: 0 0 10px rgba(0,255,159,0.8), 0 0 30px rgba(0,255,159,0.3); }
-  .neon-blue   { color: #00cfff; text-shadow: 0 0 10px rgba(0,207,255,0.8), 0 0 30px rgba(0,207,255,0.3); }
+  /* ── Neon text — softer glow ── */
+  .neon-pink   { color: #ff5e97; text-shadow: 0 0 18px rgba(255,45,120,0.55); }
+  .neon-gold   { color: #ffd700; text-shadow: 0 0 18px rgba(255,215,0,0.45); }
+  .neon-green  { color: #00ff9f; text-shadow: 0 0 18px rgba(0,255,159,0.45); }
+  .neon-blue   { color: #4fdcff; text-shadow: 0 0 18px rgba(0,207,255,0.45); }
+  .neon-cyan   { color: #4fdcff; text-shadow: 0 0 18px rgba(0,207,255,0.45); }
+  .vc-pink     { color: #ff5e97; }
 
-  /* ── Badges ── */
+  /* ── Badges — pills ── */
   .badge-season {
     display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(0,207,255,0.08); border: 1px solid rgba(0,207,255,0.35);
-    color: #00cfff; font-family: 'Montserrat', sans-serif;
-    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
-    padding: 3px 8px; border-radius: 2px; text-transform: uppercase;
+    background: rgba(0,207,255,0.1); border: 1px solid rgba(0,207,255,0.28);
+    color: #4fdcff; font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+    padding: 3px 10px; border-radius: 999px; text-transform: uppercase;
   }
   .badge-special {
     display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.38);
-    color: #ff6b35; font-family: 'Montserrat', sans-serif;
-    font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
-    padding: 3px 8px; border-radius: 2px; text-transform: uppercase;
+    background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3);
+    color: #ff8c5a; font-family: 'Montserrat', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.16em;
+    padding: 3px 10px; border-radius: 999px; text-transform: uppercase;
   }
 
   /* ── Live dot ── */
@@ -113,17 +109,17 @@
   /* ── Glow pulse (winner) ── */
   .glow-pulse { animation: gpulse 2.5s ease-in-out infinite; }
   @keyframes gpulse {
-    0%,100% { box-shadow: 0 0 15px rgba(255,215,0,0.4), 0 0 30px rgba(255,215,0,0.1); }
-    50%      { box-shadow: 0 0 40px rgba(255,215,0,0.8), 0 0 80px rgba(255,215,0,0.3); }
+    0%,100% { box-shadow: 0 0 15px rgba(255,215,0,0.35), 0 0 30px rgba(255,215,0,0.08); }
+    50%      { box-shadow: 0 0 36px rgba(255,215,0,0.65), 0 0 70px rgba(255,215,0,0.22); }
   }
 
   /* ── Label ── */
   .label {
-    font-family: 'Montserrat', sans-serif; font-size: 9px; font-weight: 500;
-    letter-spacing: 0.3em; text-transform: uppercase; color: rgba(232,222,255,0.3);
+    font-family: 'Montserrat', sans-serif; font-size: 9px; font-weight: 600;
+    letter-spacing: 0.28em; text-transform: uppercase; color: rgba(232,222,255,0.35);
   }
 
-  /* ── Display heading (Josefin Sans = Century Gothic) ── */
+  /* ── Display heading ── */
   .dh { font-family: 'Josefin Sans', sans-serif; font-weight: 600; letter-spacing: 0.05em; }
   .dh-light { font-family: 'Josefin Sans', sans-serif; font-weight: 300; letter-spacing: 0.08em; }
 
@@ -139,10 +135,23 @@
 
   .gold-line {
     height: 1px;
-    background: linear-gradient(90deg, transparent 0%, #ffd700 30%, #ff2d78 70%, transparent 100%);
-    opacity: 0.3;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,215,0,0.5) 30%, rgba(255,45,120,0.5) 70%, transparent 100%);
+    opacity: 0.25;
   }
   .suit-divider::before { content: '♦ ♠ ♥ ♣'; }
+
+  /* ── Nav pill ── */
+  .nav-pill {
+    padding: 7px 16px; border-radius: 999px;
+    font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    transition: all 0.2s ease;
+  }
+  .nav-pill-active {
+    background: rgba(255,215,0,0.1);
+    color: #ffd700;
+    box-shadow: inset 0 0 0 1px rgba(255,215,0,0.25);
+  }
 
   /* ── Holographic hero ── */
   .holo-bg {

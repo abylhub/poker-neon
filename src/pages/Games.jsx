@@ -24,8 +24,12 @@ export default function Games() {
     e.preventDefault()
     e.stopPropagation()
     if (!confirm('Удалить эту игру?')) return
-    await deleteGame(gameId)
-    toast('Игра удалена', 'error')
+    try {
+      await deleteGame(gameId)
+      toast('Игра удалена', 'error')
+    } catch (err) {
+      toast(err.message, 'error')
+    }
   }
 
   if (completed.length === 0) return (

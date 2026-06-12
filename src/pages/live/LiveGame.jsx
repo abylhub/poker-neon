@@ -1,9 +1,65 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGame, usePlayers } from '../../hooks/useData.js'
 import { eliminatePlayer } from '../../lib/db.js'
 import Avatar from '../../components/Avatar.jsx'
+import BlindTimer from '../../components/BlindTimer.jsx'
+import SeatingTable from '../../components/SeatingTable.jsx'
+
+// Полноэкранная вспышка при выбывании — показывается на всех устройствах,
+// т.к. триггерится ростом списка eliminated из Firestore
+function KnockoutFx({ entry, pmap, onDone }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 2600)
+    return () => clearTimeout(t)
+  }, [])
+  const p = pmap[entry.playerId]
+  const k = entry.eliminatedBy ? pmap[entry.eliminatedBy] : null
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onDone}
+      className="fixed inset-0 z-[60] flex flex-col items-center justify-center"
+      style={{ background: 'radial-gradient(circle at 50% 45%, rgba(80,5,30,0.88), rgba(5,5,16,0.96))', backdropFilter: 'blur(10px)' }}>
+      <motion.div
+        initial={{ scale: 0.4, rotate: -8, opacity: 0 }}
+        animate={{ scale: 1, rotate: 0, opacity: 1 }}
+        exit={{ scale: 1.1, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 280, damping: 16 }}
+        className="flex flex-col items-center">
+        <div className="relative mb-4">
+          <motion.div animate={{ filter: ['grayscale(0)', 'grayscale(1)'] }} transition={{ delay: 0.5, duration: 0.6 }}>
+            <Avatar player={p} size={110} glow="pink" />
+          </motion.div>
+          <motion.span
+            initial={{ scale: 3, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.35, type: 'spring', stiffness: 400, damping: 20 }}
+            className="absolute inset-0 flex items-center justify-center font-display"
+            style={{ fontSize: 64, color: '#ff2d78', textShadow: '0 0 24px rgba(255,45,120,0.9)' }}>
+            ✕
+          </motion.span>
+        </div>
+        <motion.div
+          initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.25 }}
+          className="font-display text-3xl tracking-[0.25em] uppercase neon-pink mb-2">
+          Выбит
+        </motion.div>
+        <motion.div initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}
+          className="text-sm font-sans" style={{ color: 'rgba(240,230,255,0.75)' }}>
+          {p?.name} · {entry.place} место · <span className="font-mono" style={{ color: '#00cfff' }}>{entry.totalPoints} pts</span>
+        </motion.div>
+        {k && (
+          <motion.div initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.55 }}
+            className="flex items-center gap-2 mt-3">
+            <Avatar player={k} size={26} glow="green" />
+            <span className="text-xs font-sans" style={{ color: '#00ff9f' }}>нокаут: {k.name}</span>
+          </motion.div>
+        )}
+      </motion.div>
+    </motion.div>
+  )
+}
 
 function Modal({ players, onConfirm, onClose }) {
   const [victim, setVictim] = useState('')
@@ -62,12 +118,31 @@ export default function LiveGame() {
   const navigate = useNavigate()
   const [modal, setModal] = useState(false)
   const [acting, setActing] = useState(false)
+  const [fx, setFx] = useState(null)
+  const prevElimCount = useRef(null)
   const { game, loading } = useGame(gameId)
   const { players } = usePlayers()
 
+  // Новая запись в eliminated (с любого устройства) → показать анимацию выбывания
+  useEffect(() => {
+    if (!game) return
+    const list = game.eliminated || []
+    if (prevElimCount.current !== null && list.length > prevElimCount.current) {
+      const fresh = list.slice(prevElimCount.current).filter(e => e.place > 1)
+      if (fresh.length) setFx(fresh[fresh.length - 1])
+    }
+    prevElimCount.current = list.length
+  }, [game?.eliminated?.length])
+
+  // Переход к итогам — после того, как доиграет анимация последнего выбывания
+  useEffect(() => {
+    if (game?.status === 'completed' && !fx) {
+      navigate(`/live/${gameId}/results`, { replace: true })
+    }
+  }, [game?.status, fx])
+
   if (loading) return <div className="text-center py-20"><div className="w-8 h-8 border-2 border-neon-cyan/30 border-t-neon-cyan rounded-full animate-spin mx-auto" /></div>
   if (!game) return <div className="text-center py-20"><div className="text-white/30 mb-4">Игра не найдена</div><button onClick={() => navigate('/')} className="btn btn-cyan">На главную</button></div>
-  if (game.status === 'completed') { navigate(`/live/${gameId}/results`, { replace: true }); return null }
 
   const pmap = Object.fromEntries(players.map(p => [p.id, p]))
   const elim = new Set((game.eliminated || []).map(e => e.playerId))
@@ -77,14 +152,14 @@ export default function LiveGame() {
   async function onElim(victimId, killerId) {
     setActing(true)
     setModal(false)
-    const updated = await eliminatePlayer(gameId, victimId, killerId)
+    await eliminatePlayer(gameId, victimId, killerId)
     setActing(false)
-    if (updated?.status === 'completed') setTimeout(() => navigate(`/live/${gameId}/results`), 600)
   }
 
   return (
     <>
       <AnimatePresence>{modal && <Modal players={active} onConfirm={onElim} onClose={() => setModal(false)} />}</AnimatePresence>
+      <AnimatePresence>{fx && <KnockoutFx entry={fx} pmap={pmap} onDone={() => setFx(null)} />}</AnimatePresence>
       <div className="max-w-xl mx-auto">
         <div className="flex items-center justify-between mb-5">
           <div>
@@ -100,6 +175,10 @@ export default function LiveGame() {
             <div className="label" style={{ fontSize: '9px' }}>осталось</div>
           </div>
         </div>
+
+        {game.blindTimer && <BlindTimer gameId={gameId} timer={game.blindTimer} />}
+
+        <SeatingTable game={game} players={players} />
 
         <div className="card p-4 mb-4">
           <div className="label mb-3">В игре</div>

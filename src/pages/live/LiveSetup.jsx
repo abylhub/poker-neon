@@ -13,6 +13,7 @@ export default function LiveSetup() {
   const [title, setTitle] = useState('')
   const [desc, setDesc] = useState('')
   const [sel, setSel] = useState([])
+  const [blindMinutes, setBlindMinutes] = useState(15)
   const [loading, setLoading] = useState(false)
 
   const toggle = id => setSel(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
@@ -21,7 +22,7 @@ export default function LiveSetup() {
   async function start() {
     if (!canStart || loading) return
     setLoading(true)
-    const game = await createLiveGame({ type, seasonId: season?.id, title, description: desc, playerIds: sel })
+    const game = await createLiveGame({ type, seasonId: season?.id, title, description: desc, playerIds: sel, blindMinutes })
     navigate(`/live/${game.id}`)
   }
 
@@ -76,6 +77,22 @@ export default function LiveSetup() {
             className={inputCls + ' resize-none'} style={inputStyle} />
         </div>
       )}
+
+      {/* Таймер блайндов */}
+      <div className="card p-4 mb-4">
+        <div className="label mb-3">Таймер блайндов · минут на уровень</div>
+        <div className="flex gap-2">
+          {[[null, 'Выкл'], [10, '10'], [15, '15'], [20, '20']].map(([v, label]) => (
+            <button key={label} onClick={() => setBlindMinutes(v)}
+              className="flex-1 py-2.5 rounded font-mono text-sm transition-all"
+              style={blindMinutes === v
+                ? { border: '1px solid rgba(255,215,0,0.5)', background: 'rgba(255,215,0,0.08)', color: '#ffd700' }
+                : { border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,230,255,0.35)' }}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Участники */}
       <div className="card p-4 mb-5">

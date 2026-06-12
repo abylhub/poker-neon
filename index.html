@@ -19,11 +19,10 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      // На localhost SW не регистрируем: его cache-first отдаёт устаревшие dev-модули
+      if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register(
-            (location.hostname === 'localhost' ? '/' : '/poker-neon/') + 'sw.js'
-          ).catch(() => {})
+          navigator.serviceWorker.register('/poker-neon/sw.js').catch(() => {})
         })
       }
     </script>
